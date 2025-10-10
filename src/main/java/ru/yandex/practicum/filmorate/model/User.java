@@ -1,6 +1,9 @@
 package ru.yandex.practicum.filmorate.model;
 
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.PastOrPresent;
+import jakarta.validation.constraints.Pattern;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
@@ -19,19 +22,12 @@ public class User {
 
     @NotBlank(message = "Логин не может быть пустым")
     @Pattern(regexp = "\\S+", message = "Логин не должен содержать пробелы")
-    @NonNull
     private String login;
 
     private String name;
 
-    @Past(message = "Дата рождения должна быть в прошлом")
+    @PastOrPresent(message = "Дата рождения не может быть в будущем")
     @NonNull
     private LocalDate birthday;
 
-//    public User(String email, String login, String name, LocalDate birthday) {
-//        this.email = email;
-//        this.login = login;
-//        this.name = name;
-//        this.birthday = birthday;
-//    }
 }

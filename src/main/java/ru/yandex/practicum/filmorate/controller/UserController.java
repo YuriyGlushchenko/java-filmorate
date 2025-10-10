@@ -29,18 +29,6 @@ public class UserController {
         log.info("POST /users: Создание пользователя с логином {}", user.getLogin());
         log.trace("Полные данные пользователя: {}", user);
 
-//        if (bindingResult.hasErrors()) {
-//            log.warn("Некорректные данные: {}, {}, {}", user.getEmail(), user.getLogin(), user.getBirthday());
-//            throw new ValidationException("Параметры пользователя недопустимы");
-//        }
-
-//        if (!isEmailCorrect(user.getEmail())
-//                || !isLoginCorrect(user.getLogin())
-//                || user.getBirthday().isAfter(LocalDate.now())) {
-//            log.warn("Некорректные данные: {}, {}, {}", user.getEmail(), user.getLogin(), user.getBirthday());
-//            throw new ValidationException("Параметры пользователя недопустимы");
-//        }
-
         user.setId(getNextId());
         if (user.getName() == null || user.getName().isBlank()) {
             log.debug("Пользователю с именем ->|{}|<- присвоено имя {}", user.getName(), user.getLogin());
@@ -48,7 +36,7 @@ public class UserController {
         }
 
         users.put(user.getId(), user);
-        log.debug("Пользователь с логином {} успешно создан с ID: {}",user.getLogin(), user.getId());
+        log.debug("Пользователь с логином {} успешно создан с ID: {}", user.getLogin(), user.getId());
 
         return user;
     }

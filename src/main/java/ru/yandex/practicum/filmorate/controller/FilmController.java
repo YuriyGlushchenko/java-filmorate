@@ -20,7 +20,7 @@ public class FilmController {
 
     @GetMapping
     public Collection<Film> findAll() {
-        log.info("GET /users: Запрос на получение всех пользователей");
+        log.info("GET /users: Запрос на получение всех фильмов");
         return films.values();
     }
 
@@ -29,22 +29,16 @@ public class FilmController {
         log.info("POST /films: Создание фильма с названием {}", film.getName());
         log.trace("Полные данные пользователя: {}", film);
 
-//        if (film.getName() == null
-//                || film.getName().isBlank()
-//                || film.getDescription().length() > 200
-//                || film.getDuration() <= 0
-//                || film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
-//            log.warn("Некорректные данные: {}, {}, {}, {}", film.getName(), film.getDescription(), film.getDuration(), film.getReleaseDate());
-////            throw new ValidationException("Параметры фильма недопустимы");
-//        }
-
         film.setId(getNextId());
         films.put(film.getId(), film);
 
-        log.debug("Фильм с названием {} успешно создан с ID: {}",film.getName(), film.getId());
+        log.debug("Фильм с названием {} успешно создан с ID: {}", film.getName(), film.getId());
         return film;
     }
 
+    // В ТЗ не описано, как быть, если одно из полей невалидно, обновлять ли остальные поля, которые корректные,
+    // или полностью отклонять такой запрос на обновление. Если полностью отклонять, то можно, конечно, сделать проще,
+    // через @Valid как в методе create.
     @PutMapping
     public Film update(@RequestBody Film newFilm) {
         log.debug("Обновление фильма с ID: {}", newFilm.getId());
@@ -52,7 +46,7 @@ public class FilmController {
 
         if (newFilm.getId() <= 0) {
             log.warn("Передан фильм с некорректным id {}", newFilm.getId());
-            throw new ValidationException("Id", newFilm.getId() ,"Id должен быть корректно указан (положительное целое число)");
+            throw new ValidationException("Id", newFilm.getId(), "Id должен быть корректно указан (положительное целое число)");
         }
 
         if (films.containsKey(newFilm.getId())) {
@@ -62,7 +56,7 @@ public class FilmController {
                 oldFilm.setName(newFilm.getName());
                 log.debug("Обновлено название фильма: {}", newFilm.getName());
             }
-            if (newFilm.getDescription().length() < 200) {
+            if (newFilm.getDescription() != null && newFilm.getDescription().length() < 200) {
                 oldFilm.setDescription(newFilm.getDescription());
                 log.debug("Обновлено описание фильма: {}", newFilm.getDescription());
             }
@@ -70,7 +64,7 @@ public class FilmController {
                 oldFilm.setDuration(newFilm.getDuration());
                 log.debug("Обновлена продолжительность фильма: {}", newFilm.getDuration());
             }
-            if (newFilm.getReleaseDate().isAfter(LocalDate.of(1895, 12, 28))) {
+            if (newFilm.getReleaseDate() != null && newFilm.getReleaseDate().isAfter(LocalDate.of(1895, 12, 28))) {
                 oldFilm.setReleaseDate(newFilm.getReleaseDate());
                 log.debug("Обновлена дата выхода: {}", newFilm.getReleaseDate());
             }
@@ -89,4 +83,5 @@ public class FilmController {
                 .orElse(0);
         return ++currentMaxId;
     }
+
 }
