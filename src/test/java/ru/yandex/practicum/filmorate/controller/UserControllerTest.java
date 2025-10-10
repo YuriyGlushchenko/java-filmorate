@@ -58,12 +58,14 @@ class UserControllerTest {
 
     @Test
     void createUser_WithNullEmail_ShouldReturn400() throws Exception {
+        // CHECKSTYLE:OFF
         String userJson = """
                 {
                     "login": "validlogin",
                     "birthday": "1990-01-01"
                 }
                 """;
+        // CHECKSTYLE:ON
 
         mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -136,6 +138,7 @@ class UserControllerTest {
 
     @Test
     void shouldUseLoginAsNameWhenNameIsNull() throws Exception {
+        // CHECKSTYLE:OFF
         String userJson = """
                 {
                     "email": "test@example.com",
@@ -143,6 +146,7 @@ class UserControllerTest {
                     "birthday": "1990-01-01"
                 }
                 """;
+        // CHECKSTYLE:ON
 
         mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -153,6 +157,7 @@ class UserControllerTest {
 
     @Test
     void shouldUseLoginAsNameWhenNameIsBlank() throws Exception {
+        // CHECKSTYLE:OFF
         String userJson = """
                 {
                     "email": "test@example.com",
@@ -161,6 +166,7 @@ class UserControllerTest {
                     "birthday": "1990-01-01"
                 }
                 """;
+        // CHECKSTYLE:ON
 
         mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
