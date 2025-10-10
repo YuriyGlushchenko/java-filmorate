@@ -3,8 +3,8 @@ package ru.yandex.practicum.filmorate.controller;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
-import ru.yandex.practicum.filmorate.exceptions.ValidationException;
+import ru.yandex.practicum.filmorate.exceptions.exceptions.NotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
@@ -25,16 +25,21 @@ public class UserController {
     }
 
     @PostMapping
-    public User create(@RequestBody User user) {
+    public User create(@Valid @RequestBody User user) {
         log.info("POST /users: Создание пользователя с логином {}", user.getLogin());
         log.trace("Полные данные пользователя: {}", user);
 
-        if (!isEmailCorrect(user.getEmail())
-                || !isLoginCorrect(user.getLogin())
-                || user.getBirthday().isAfter(LocalDate.now())) {
-            log.warn("Некорректные данные: {}, {}, {}", user.getEmail(), user.getLogin(), user.getBirthday());
-            throw new ValidationException("Параметры пользователя недопустимы");
-        }
+//        if (bindingResult.hasErrors()) {
+//            log.warn("Некорректные данные: {}, {}, {}", user.getEmail(), user.getLogin(), user.getBirthday());
+//            throw new ValidationException("Параметры пользователя недопустимы");
+//        }
+
+//        if (!isEmailCorrect(user.getEmail())
+//                || !isLoginCorrect(user.getLogin())
+//                || user.getBirthday().isAfter(LocalDate.now())) {
+//            log.warn("Некорректные данные: {}, {}, {}", user.getEmail(), user.getLogin(), user.getBirthday());
+//            throw new ValidationException("Параметры пользователя недопустимы");
+//        }
 
         user.setId(getNextId());
         if (user.getName() == null || user.getName().isBlank()) {
@@ -48,19 +53,21 @@ public class UserController {
         return user;
     }
 
+
+    // В ТЗ не описано, как быть, если одно из полей невалидно, обновлять ли остальные поля, которые корректные,
+    // или полностью отклонять такой запрос на обновление. Если полностью отклонять, то можно, конечно, сделать проще,
+    // через @Valid как в методе create.
     @PutMapping
-    public User update(@Valid @RequestBody User newUser) {
+    public User update(@RequestBody User newUser) {
         log.debug("Обновление пользователя с ID: {}", newUser.getId());
         log.trace("Полные данные пользователя для обновления: {}", newUser);
 
         if (newUser.getId() <= 0) {
-            log.warn("Передан пользователь с некорректным id {}", newUser.getId());
-            throw new ValidationException("Id должен быть корректно указан (положительное целое число)");
+            throw new ValidationException("Id", newUser.getId(), "Id должен быть корректно указан (положительное целое число)");
         }
 
         if (users.containsKey(newUser.getId())) {
             User oldUser = users.get(newUser.getId());
-
 
             if (isEmailCorrect(newUser.getEmail())) {
                 oldUser.setEmail(newUser.getEmail());
@@ -83,7 +90,6 @@ public class UserController {
             return oldUser;
         }
 
-        log.error("Пользователь с ID {} не найден", newUser.getId());
         throw new NotFoundException("Пользователя с id = " + newUser.getId() + " не найдено");
     }
 

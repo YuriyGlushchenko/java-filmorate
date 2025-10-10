@@ -1,9 +1,10 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
-import ru.yandex.practicum.filmorate.exceptions.ValidationException;
+import ru.yandex.practicum.filmorate.exceptions.exceptions.NotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.time.LocalDate;
@@ -24,18 +25,18 @@ public class FilmController {
     }
 
     @PostMapping
-    public Film create(@RequestBody Film film) {
+    public Film create(@Valid @RequestBody Film film) {
         log.info("POST /films: Создание фильма с названием {}", film.getName());
         log.trace("Полные данные пользователя: {}", film);
 
-        if (film.getName() == null
-                || film.getName().isBlank()
-                || film.getDescription().length() > 200
-                || film.getDuration() <= 0
-                || film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
-            log.warn("Некорректные данные: {}, {}, {}, {}", film.getName(), film.getDescription(), film.getDuration(), film.getReleaseDate());
-            throw new ValidationException("Параметры фильма недопустимы");
-        }
+//        if (film.getName() == null
+//                || film.getName().isBlank()
+//                || film.getDescription().length() > 200
+//                || film.getDuration() <= 0
+//                || film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
+//            log.warn("Некорректные данные: {}, {}, {}, {}", film.getName(), film.getDescription(), film.getDuration(), film.getReleaseDate());
+////            throw new ValidationException("Параметры фильма недопустимы");
+//        }
 
         film.setId(getNextId());
         films.put(film.getId(), film);
@@ -51,7 +52,7 @@ public class FilmController {
 
         if (newFilm.getId() <= 0) {
             log.warn("Передан фильм с некорректным id {}", newFilm.getId());
-            throw new ValidationException("Id должен быть корректно указан (положительное целое число)");
+            throw new ValidationException("Id", newFilm.getId() ,"Id должен быть корректно указан (положительное целое число)");
         }
 
         if (films.containsKey(newFilm.getId())) {
