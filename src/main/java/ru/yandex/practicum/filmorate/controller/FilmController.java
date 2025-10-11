@@ -52,7 +52,7 @@ public class FilmController {
             oldFilm.setDuration(newFilm.getDuration());
             oldFilm.setReleaseDate(newFilm.getReleaseDate());
 
-            log.info("Фильма с ID {} успешно обновлен", newFilm.getId());
+            log.info("Фильм с ID {} успешно обновлен", newFilm.getId());
             return oldFilm;
         }
         throw new NotFoundException("Фильма с id = " + newFilm.getId() + " не найдено");

@@ -272,7 +272,7 @@ class FilmControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(film)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errorCode", is("BAD_REQUEST")));
+                .andExpect(jsonPath("$.errorCode", is("CONSTRAINT_VIOLATIONS")));
     }
 
     @Test
@@ -289,7 +289,7 @@ class FilmControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(film)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errorCode", is("BAD_REQUEST")));
+                .andExpect(jsonPath("$.errorCode", is("CONSTRAINT_VIOLATIONS")));
     }
 
     @Test
@@ -468,7 +468,7 @@ class FilmControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(invalidIdFilm)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errorCode", is("BAD_REQUEST")));
+                .andExpect(jsonPath("$.errorCode", is("CONSTRAINT_VIOLATIONS")));
     }
 
     @Test
@@ -479,7 +479,7 @@ class FilmControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(invalidIdFilm)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errorCode", is("BAD_REQUEST")));
+                .andExpect(jsonPath("$.errorCode", is("CONSTRAINT_VIOLATIONS")));
     }
 
 }

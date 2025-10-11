@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.exceptions;
 
+import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +17,7 @@ import ru.yandex.practicum.filmorate.exceptions.responses.ValidationError;
 import ru.yandex.practicum.filmorate.exceptions.responses.ValidationErrorResponse;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @RestControllerAdvice
@@ -96,18 +98,33 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ConstraintViolationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorMessage handleConstraintViolationException(ConstraintViolationException ex) {
+    public ValidationErrorResponse handleConstraintViolationException(ConstraintViolationException ex) {
+
+        Set<ConstraintViolation<?>> violations = ex.getConstraintViolations();
 
         // Логирование:
-        StackTraceElement topElement = ex.getStackTrace()[0];
-        String detailedLogMessage = String.format("%s -> %s -> %s",
-                topElement.getClassName(),
-                topElement.getMethodName(),
-                ex.getMessage());
+        String detailedLogMessage = violations.stream()
+                .map(violation -> String.format(
+                        "Поле: '%s'. Отклоненное значение: '%s'. Причина: %s",
+                        violation.getPropertyPath().toString(),
+                        violation.getInvalidValue(),
+                        violation.getMessage()
+                ))
+                .collect(Collectors.joining("; "));
 
-        logger.warn("Ошибка: {}", detailedLogMessage);
+        logger.warn("Ошибки валидации: {}", detailedLogMessage);
 
-        return new ErrorMessage("BAD_REQUEST", ex.getMessage());
+        // Ответ для клиента:
+        List<ValidationError> validationErrors = violations.stream()
+                .map(violation -> new ValidationError(
+                        violation.getPropertyPath().toString(),
+                        violation.getMessage(),
+                        violation.getInvalidValue()
+                ))
+                .collect(Collectors.toList());
+
+        return new ValidationErrorResponse("CONSTRAINT_VIOLATIONS", validationErrors);
+
     }
 
 

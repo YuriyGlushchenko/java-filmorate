@@ -99,7 +99,7 @@ class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(user)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errorCode").value("BAD_REQUEST"));
+                .andExpect(jsonPath("$.errorCode").value("CONSTRAINT_VIOLATIONS"));
     }
 
     @Test
@@ -110,7 +110,7 @@ class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validUser)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errorCode").value("BAD_REQUEST"));
+                .andExpect(jsonPath("$.errorCode").value("CONSTRAINT_VIOLATIONS"));
     }
 
     @Test

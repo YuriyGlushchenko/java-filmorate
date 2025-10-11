@@ -7,6 +7,7 @@ import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ru.yandex.practicum.filmorate.validators.Marker;
 
 import java.time.LocalDate;
 import java.util.Set;
@@ -41,6 +42,64 @@ class FilmModelValidationTest {
         Set<ConstraintViolation<Film>> violations = validator.validate(validFilm);
 
         assertTrue(violations.isEmpty(), "Валидный фильм должен проходить валидацию");
+    }
+
+    @Test
+    void shouldCreateValidFilmForCreateGroupWithIdNull() {
+        validFilm.setId(null);
+        Set<ConstraintViolation<Film>> violations = validator.validate(validFilm, Marker.OnCreate.class);
+
+        assertTrue(violations.isEmpty(), "Валидный фильм должен проходить валидацию");
+    }
+
+    @Test
+    void shouldFailValidationForCreateGroupWhenIdIsNotNull() {
+        Film invalidFilm = validFilm.toBuilder().id(1).build();
+
+        Set<ConstraintViolation<Film>> violations = validator.validate(invalidFilm, Marker.OnCreate.class);
+
+        assertEquals(1, violations.size());
+        assertEquals("При создании фильма id должен быть null", violations.iterator().next().getMessage());
+    }
+
+    @Test
+    void shouldFailValidationForCreateGroupWhenIdIsZero() {
+        Film invalidFilm = validFilm.toBuilder().id(0).build();
+
+        Set<ConstraintViolation<Film>> violations = validator.validate(invalidFilm, Marker.OnCreate.class);
+
+        assertEquals(1, violations.size());
+        assertEquals("При создании фильма id должен быть null", violations.iterator().next().getMessage());
+    }
+
+    @Test
+    void shouldFailValidationForUpdateGroupWhenIdIsNull() {
+        validFilm.setId(null);
+
+        Set<ConstraintViolation<Film>> violations = validator.validate(validFilm, Marker.OnUpdate.class);
+
+        assertEquals(1, violations.size());
+        assertEquals("При обновлении фильма id не может быть null", violations.iterator().next().getMessage());
+    }
+
+    @Test
+    void shouldPassValidationForUpdateGroupWhenIdIsPositiveNumber() {
+        Film invalidFilm = validFilm.toBuilder().id(1).build();
+
+        Set<ConstraintViolation<Film>> violations = validator.validate(invalidFilm, Marker.OnUpdate.class);
+
+        assertTrue(violations.isEmpty(), "Валидный фильм c id =1 должен проходить валидацию при обновлении");
+    }
+
+    @Test
+    void shouldFailValidationForUpdateGroupWhenIdIsZero() {
+        Film invalidFilm = validFilm.toBuilder().id(0).build();
+
+        Set<ConstraintViolation<Film>> violations = validator.validate(invalidFilm, Marker.OnUpdate.class);
+
+        assertEquals(1, violations.size());
+        assertEquals("При обновлении фильма id должен быть положительным целым числом",
+                violations.iterator().next().getMessage());
     }
 
     @Test

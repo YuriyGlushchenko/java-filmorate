@@ -13,9 +13,9 @@ import java.time.LocalDate;
 @Builder(toBuilder = true)
 public class Film {
 
-    @Null(groups = Marker.OnCreate.class)
-    @NotNull(groups = Marker.OnUpdate.class)
-    @Positive(groups = Marker.OnUpdate.class)
+    @Null(groups = Marker.OnCreate.class, message = "При создании фильма id должен быть null")
+    @NotNull(groups = Marker.OnUpdate.class, message = "При обновлении фильма id не может быть null")
+    @Positive(groups = Marker.OnUpdate.class, message = "При обновлении фильма id должен быть положительным целым числом")
     private Integer id;
 
     @NotBlank(message = "Название фильма не может быть пустым")
@@ -26,7 +26,6 @@ public class Film {
 
     @NotNull(message = "Дата релиза обязательна")
     @After(value = "1895-12-28", message = "Дата релиза должна быть после 28 декабря 1895 года")
-    // избыточно, но интересно)
     private LocalDate releaseDate;
 
     @Positive(message = "Продолжительность должна быть положительной")
