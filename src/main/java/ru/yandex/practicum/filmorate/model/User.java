@@ -11,8 +11,8 @@ import java.time.LocalDate;
 @Builder(toBuilder = true)
 public class User {
 
-    @Null(groups = Marker.OnCreate.class)
-    @NotNull(groups = Marker.OnUpdate.class)
+    @Null(groups = Marker.OnCreate.class, message = "При создании id должен быть null")
+    @NotNull(groups = Marker.OnUpdate.class, message = "При обновлении id не может быть null")
     @Positive(groups = Marker.OnUpdate.class)
     private Integer id;
 

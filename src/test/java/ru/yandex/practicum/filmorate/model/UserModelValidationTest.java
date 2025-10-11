@@ -91,7 +91,7 @@ class UserModelValidationTest {
         Set<ConstraintViolation<User>> violations = validator.validate(invalidUser, Marker.OnCreate.class);
 
         assertEquals(1, violations.size());
-        assertEquals("должно равняться null", violations.iterator().next().getMessage());
+        assertEquals("При создании id должен быть null", violations.iterator().next().getMessage());
     }
 
     @Test
@@ -101,7 +101,7 @@ class UserModelValidationTest {
         Set<ConstraintViolation<User>> violations = validator.validate(invalidUser, Marker.OnUpdate.class);
 
         assertEquals(1, violations.size());
-        assertEquals("не должно равняться null", violations.iterator().next().getMessage());
+        assertEquals("При обновлении id не может быть null", violations.iterator().next().getMessage());
     }
 
     @Test
