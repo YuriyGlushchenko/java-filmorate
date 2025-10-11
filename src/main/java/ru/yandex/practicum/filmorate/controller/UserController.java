@@ -2,12 +2,12 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.exceptions.NotFoundException;
-import ru.yandex.practicum.filmorate.exceptions.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.validators.Marker;
 
-import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,6 +15,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/users")
 @Slf4j
+@Validated
 public class UserController {
     private final Map<Integer, User> users = new HashMap<>();
 
@@ -24,7 +25,9 @@ public class UserController {
         return users.values();
     }
 
+
     @PostMapping
+    @Validated({Marker.OnCreate.class})
     public User create(@Valid @RequestBody User user) {
         log.info("POST /users: Создание пользователя с логином {}", user.getLogin());
         log.trace("Полные данные пользователя: {}", user);
@@ -41,37 +44,25 @@ public class UserController {
         return user;
     }
 
-
-    // В ТЗ не описано, как быть, если одно из полей невалидно, обновлять ли остальные поля, которые корректные,
-    // или полностью отклонять такой запрос на обновление. Если полностью отклонять, то можно, конечно, сделать проще,
-    // через @Valid как в методе create.
     @PutMapping
-    public User update(@RequestBody User newUser) {
+    @Validated({Marker.OnUpdate.class})
+    public User update(@RequestBody @Valid User newUser) {
         log.debug("Обновление пользователя с ID: {}", newUser.getId());
         log.trace("Полные данные пользователя для обновления: {}", newUser);
-
-        if (newUser.getId() <= 0) {
-            throw new ValidationException("Id", newUser.getId(), "Id должен быть корректно указан (положительное целое число)");
-        }
 
         if (users.containsKey(newUser.getId())) {
             User oldUser = users.get(newUser.getId());
 
-            if (isEmailCorrect(newUser.getEmail())) {
-                oldUser.setEmail(newUser.getEmail());
-                log.debug("Обновлена почта: {}", newUser.getEmail());
-            }
-            if (isLoginCorrect(newUser.getLogin())) {
-                oldUser.setLogin(newUser.getLogin());
-                log.debug("Обновлен логин: {}", newUser.getLogin());
-            }
-            if (newUser.getBirthday().isBefore(LocalDate.now())) {
-                oldUser.setBirthday(newUser.getBirthday());
-                log.debug("Обновлена дата рождения: {}", newUser.getBirthday());
-            }
+            oldUser.setEmail(newUser.getEmail());
+            oldUser.setLogin(newUser.getLogin());
+            oldUser.setBirthday(newUser.getBirthday());
+
             if (newUser.getName() != null && !newUser.getName().isBlank()) {
                 oldUser.setName(newUser.getName());
-                log.debug("Обновлено имя пользователя: {}", newUser.getName());
+                log.debug("Обновлено имя пользователя на новое имя: {}", newUser.getName());
+            } else {
+                oldUser.setName(newUser.getLogin());
+                log.debug("Обновлено имя пользователя: вместо имени {} установлено имя {}", newUser.getName(), newUser.getLogin());
             }
 
             log.info("Пользователь с ID {} успешно обновлен", newUser.getId());
@@ -81,7 +72,7 @@ public class UserController {
         throw new NotFoundException("Пользователя с id = " + newUser.getId() + " не найдено");
     }
 
-    private int getNextId() {
+    private Integer getNextId() {
         int currentMaxId = users.keySet()
                 .stream()
                 .mapToInt(id -> id)

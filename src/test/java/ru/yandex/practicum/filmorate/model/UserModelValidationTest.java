@@ -7,6 +7,7 @@ import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ru.yandex.practicum.filmorate.validators.Marker;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -44,6 +45,13 @@ class UserModelValidationTest {
     }
 
     @Test
+    void shouldCreateValidUserForCreateGroupWhenIdIsNull() {
+        validUser.setId(null);
+        Set<ConstraintViolation<User>> violations = validator.validate(validUser);
+        assertTrue(violations.isEmpty(), "Валидный пользователь не должен иметь нарушений валидации");
+    }
+
+    @Test
     void shouldCreateUserWithMinimumValidData() {
         User user = User.builder()
                 .email("a@b.c")
@@ -74,6 +82,36 @@ class UserModelValidationTest {
         assertFalse(violations.isEmpty());
         assertEquals(1, violations.size());
         assertEquals("Email не может быть пустым", violations.iterator().next().getMessage());
+    }
+
+    @Test
+    void shouldFailValidationForCreateGroupWhenIdIsNotNull() {
+        User invalidUser = validUser.toBuilder().id(1).build();
+
+        Set<ConstraintViolation<User>> violations = validator.validate(invalidUser, Marker.OnCreate.class);
+
+        assertEquals(1, violations.size());
+        assertEquals("должно равняться null", violations.iterator().next().getMessage());
+    }
+
+    @Test
+    void shouldFailValidationForUpdateGroupWhenIdIsNull() {
+        User invalidUser = validUser.toBuilder().id(null).build();
+
+        Set<ConstraintViolation<User>> violations = validator.validate(invalidUser, Marker.OnUpdate.class);
+
+        assertEquals(1, violations.size());
+        assertEquals("не должно равняться null", violations.iterator().next().getMessage());
+    }
+
+    @Test
+    void shouldFailValidationForUpdateGroupWhenIdIsZero() {
+        User invalidUser = validUser.toBuilder().id(0).build();
+
+        Set<ConstraintViolation<User>> violations = validator.validate(invalidUser, Marker.OnUpdate.class);
+
+        assertEquals(1, violations.size());
+        assertEquals("должно быть больше 0", violations.iterator().next().getMessage());
     }
 
     @Test

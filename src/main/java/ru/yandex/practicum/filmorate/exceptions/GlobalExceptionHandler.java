@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.exceptions;
 
+import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -91,6 +92,22 @@ public class GlobalExceptionHandler {
         logger.warn("Ошибка: {}", detailedLogMessage);
 
         return new ErrorMessage("NOT_FOUND", ex.getMessage());
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorMessage handleConstraintViolationException(ConstraintViolationException ex) {
+
+        // Логирование:
+        StackTraceElement topElement = ex.getStackTrace()[0];
+        String detailedLogMessage = String.format("%s -> %s -> %s",
+                topElement.getClassName(),
+                topElement.getMethodName(),
+                ex.getMessage());
+
+        logger.warn("Ошибка: {}", detailedLogMessage);
+
+        return new ErrorMessage("BAD_REQUEST", ex.getMessage());
     }
 
 

@@ -99,8 +99,18 @@ class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(user)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errorCode").value("VALIDATION_FAILED"))
-                .andExpect(jsonPath("$.validationErrorList[0].fieldName").value("Id"));
+                .andExpect(jsonPath("$.errorCode").value("BAD_REQUEST"));
+    }
+
+    @Test
+    void createUser_WithNotNullId_ShouldReturn400() throws Exception {
+        validUser.setId(1);
+
+        mockMvc.perform(post("/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(validUser)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errorCode").value("BAD_REQUEST"));
     }
 
     @Test
@@ -141,6 +151,7 @@ class UserControllerTest {
         // CHECKSTYLE:OFF
         String userJson = """
                 {
+                
                     "email": "test@example.com",
                     "login": "testlogin",
                     "birthday": "1990-01-01"
@@ -173,6 +184,139 @@ class UserControllerTest {
                         .content(userJson))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("testlogin"));
+    }
+
+    @Test
+    void shouldUpdateValidUserSuccessfully() throws Exception {
+        // Исходный Json
+        // CHECKSTYLE:OFF
+        String createUserJson = """
+                {
+                    "email": "original@example.com",
+                    "login": "originallogin",
+                    "name": "Original Name",
+                    "birthday": "1990-01-01"
+                }
+                """;
+        // CHECKSTYLE:ON
+
+        // отправляем запрос на создание, получаем ответ
+        String createdUserResponse = mockMvc.perform(post("/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(createUserJson))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        // Достаём ID созданного пользователя
+        User createdUser = objectMapper.readValue(createdUserResponse, User.class);
+        Integer userId = createdUser.getId();
+
+        // Json для обновления
+        // CHECKSTYLE:OFF
+        String updateUserJson = String.format("""
+                {
+                    "id": %d,
+                    "email": "updated@example.com",
+                    "login": "updatedlogin",
+                    "name": "Updated Name",
+                    "birthday": "1995-05-15"
+                }
+                """, userId);
+        // CHECKSTYLE:ON
+
+        // Запрос на обновление
+        mockMvc.perform(put("/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updateUserJson))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(userId))
+                .andExpect(jsonPath("$.email").value("updated@example.com"))
+                .andExpect(jsonPath("$.login").value("updatedlogin"))
+                .andExpect(jsonPath("$.name").value("Updated Name"))
+                .andExpect(jsonPath("$.birthday").value("1995-05-15"));
+    }
+
+    @Test
+    void shouldUpdateUserWithNullNameAndSetLoginAsName() throws Exception {
+        // CHECKSTYLE:OFF
+        String createUserJson = """
+                {
+                    "email": "test@example.com",
+                    "login": "testlogin",
+                    "name": "Test Name",
+                    "birthday": "1990-01-01"
+                }
+                """;
+        // CHECKSTYLE:ON
+
+        // Создаем пользователя
+        String createdUserResponse = mockMvc.perform(post("/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(createUserJson))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        // Получаем ID созданного пользователя
+        User createdUser = objectMapper.readValue(createdUserResponse, User.class);
+        Integer userId = createdUser.getId();
+
+        // Обновляем пользователя с null именем
+        // CHECKSTYLE:OFF
+        String updateUserJson = String.format("""
+                {
+                    "id": %d,
+                    "email": "updated@example.com",
+                    "login": "newlogin",
+                    "name": null,
+                    "birthday": "1995-05-15"
+                }
+                """, userId);
+        // CHECKSTYLE:ON
+
+        // Проверяем, что при обновлении с null именем устанавливается логин
+        mockMvc.perform(put("/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updateUserJson))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(userId))
+                .andExpect(jsonPath("$.email").value("updated@example.com"))
+                .andExpect(jsonPath("$.login").value("newlogin"))
+                .andExpect(jsonPath("$.name").value("newlogin")) // имя должно быть равно логину
+                .andExpect(jsonPath("$.birthday").value("1995-05-15"));
+    }
+
+    @Test
+    void shouldRejectUpdateWithNullId() throws Exception {
+        User invalidUser = validUser.toBuilder().id(null).build();
+
+        mockMvc.perform(put("/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidUser)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldRejectUpdateWithInvalidEmail() throws Exception {
+        User invalidUser = validUser.toBuilder().email("bad-email").build();
+
+        mockMvc.perform(put("/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidUser)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldRejectUpdateWithInvalidLogin() throws Exception {
+        User invalidUser = validUser.toBuilder().login("   ").build();
+
+        mockMvc.perform(put("/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidUser)))
+                .andExpect(status().isBadRequest());
     }
 
 }

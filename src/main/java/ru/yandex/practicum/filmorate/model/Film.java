@@ -1,12 +1,10 @@
 package ru.yandex.practicum.filmorate.model;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.Builder;
 import lombok.Data;
 import ru.yandex.practicum.filmorate.validators.After;
+import ru.yandex.practicum.filmorate.validators.Marker;
 
 import java.time.LocalDate;
 
@@ -14,7 +12,11 @@ import java.time.LocalDate;
 @Data
 @Builder(toBuilder = true)
 public class Film {
-    private int id;
+
+    @Null(groups = Marker.OnCreate.class)
+    @NotNull(groups = Marker.OnUpdate.class)
+    @Positive(groups = Marker.OnUpdate.class)
+    private Integer id;
 
     @NotBlank(message = "Название фильма не может быть пустым")
     private String name;

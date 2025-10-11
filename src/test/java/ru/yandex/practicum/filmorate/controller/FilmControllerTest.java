@@ -272,11 +272,11 @@ class FilmControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(film)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errorCode", is("VALIDATION_FAILED")));
+                .andExpect(jsonPath("$.errorCode", is("BAD_REQUEST")));
     }
 
     @Test
-    void updateFilm_WithZeroId_ShouldReturnValidationError() throws Exception {
+    void updateFilm_WithZeroId_ShouldReturnBAD_REQUEST() throws Exception {
         Film film = Film.builder()
                 .id(0)
                 .name("Film with zero ID")
@@ -289,11 +289,11 @@ class FilmControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(film)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errorCode", is("VALIDATION_FAILED")));
+                .andExpect(jsonPath("$.errorCode", is("BAD_REQUEST")));
     }
 
     @Test
-    void updateFilm_WithPartialData_ShouldUpdateOnlyProvidedFields() throws Exception {
+    void updateFilm_WithPartialData_ShouldReturnValidationError() throws Exception {
         // Создаем фильм
         String createResponse = mockMvc.perform(post("/films")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -314,15 +314,13 @@ class FilmControllerTest {
         mockMvc.perform(put("/films")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(partialUpdate)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(filmId)))
-                .andExpect(jsonPath("$.name", is("Only Name Updated")))
-                .andExpect(jsonPath("$.description", is("Test Description"))) // Осталось прежним
-                .andExpect(jsonPath("$.duration", is(120))); // Осталось прежним
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errorCode", is("VALIDATION_FAILED")));
+
     }
 
     @Test
-    void updateFilm_WithInvalidDescriptionLength_ShouldNotUpdateDescription() throws Exception {
+    void updateFilm_WithInvalidDescriptionLength_ShouldReturnValidationError() throws Exception {
         // Создаем фильм
         String createResponse = mockMvc.perform(post("/films")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -346,16 +344,12 @@ class FilmControllerTest {
         mockMvc.perform(put("/films")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateWithLongDescription)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(filmId)))
-                .andExpect(jsonPath("$.name", is("Updated Name"))) // Имя обновилось
-                .andExpect(jsonPath("$.description", is("Test Description"))) // Описание НЕ обновилось (осталось старым)
-                .andExpect(jsonPath("$.duration", is(150))); // Продолжительность обновилась
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errorCode", is("VALIDATION_FAILED")));
     }
 
     @Test
-    void updateFilm_WithEarlyReleaseDate_ShouldNotUpdateReleaseDate() throws Exception {
-        // Создаем фильм
+    void updateFilm_WithEarlyReleaseDate_ShouldReturnValidationError() throws Exception {
         String createResponse = mockMvc.perform(post("/films")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validFilm)))
@@ -378,16 +372,12 @@ class FilmControllerTest {
         mockMvc.perform(put("/films")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateWithEarlyDate)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(filmId)))
-                .andExpect(jsonPath("$.name", is("Updated Name"))) // Имя обновилось
-                .andExpect(jsonPath("$.description", is("Updated Description"))) // Описание обновилось
-                .andExpect(jsonPath("$.releaseDate", is("2000-01-01"))) // Дата релиза НЕ обновилась (осталась старой)
-                .andExpect(jsonPath("$.duration", is(150))); // Продолжительность обновилась
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errorCode", is("VALIDATION_FAILED")));
     }
 
     @Test
-    void updateFilm_WithNullName_ShouldNotUpdateName() throws Exception {
+    void updateFilm_WithNullName_ShouldReturnValidationError() throws Exception {
         // Создаем фильм
         String createResponse = mockMvc.perform(post("/films")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -410,15 +400,12 @@ class FilmControllerTest {
         mockMvc.perform(put("/films")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateWithNullName)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(filmId)))
-                .andExpect(jsonPath("$.name", is("Test Film"))) // Имя осталось прежним
-                .andExpect(jsonPath("$.description", is("Updated Description"))) // Описание обновилось
-                .andExpect(jsonPath("$.duration", is(150))); // Продолжительность обновилась
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errorCode", is("VALIDATION_FAILED")));
     }
 
     @Test
-    void updateFilm_WithEmptyName_ShouldNotUpdateName() throws Exception {
+    void updateFilm_WithEmptyName_ShouldReturnValidationError() throws Exception {
         // Создаем фильм
         String createResponse = mockMvc.perform(post("/films")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -441,15 +428,12 @@ class FilmControllerTest {
         mockMvc.perform(put("/films")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateWithEmptyName)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(filmId)))
-                .andExpect(jsonPath("$.name", is("Test Film"))) // Имя осталось прежним
-                .andExpect(jsonPath("$.description", is("Updated Description"))) // Описание обновилось
-                .andExpect(jsonPath("$.duration", is(150))); // Продолжительность обновилась
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errorCode", is("VALIDATION_FAILED")));
     }
 
     @Test
-    void updateFilm_WithNegativeDuration_ShouldNotUpdateDuration() throws Exception {
+    void updateFilm_WithNegativeDuration_ShouldReturnValidationError() throws Exception {
         // Создаем фильм
         String createResponse = mockMvc.perform(post("/films")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -472,11 +456,30 @@ class FilmControllerTest {
         mockMvc.perform(put("/films")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateWithNegativeDuration)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(filmId)))
-                .andExpect(jsonPath("$.name", is("Updated Name"))) // Имя обновилось
-                .andExpect(jsonPath("$.description", is("Updated Description"))) // Описание обновилось
-                .andExpect(jsonPath("$.duration", is(120))); // Продолжительность НЕ обновилась (осталась старой)
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errorCode", is("VALIDATION_FAILED")));
+    }
+
+    @Test
+    void createFilm_WithNotNullId_ShouldReturnBAD_REQUEST() throws Exception {
+        Film invalidIdFilm = validFilm.toBuilder().id(1).build();
+
+        mockMvc.perform(post("/films")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidIdFilm)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errorCode", is("BAD_REQUEST")));
+    }
+
+    @Test
+    void createFilm_WithNotZeroId_ShouldReturnBAD_REQUEST() throws Exception {
+        Film invalidIdFilm = validFilm.toBuilder().id(0).build();
+
+        mockMvc.perform(post("/films")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidIdFilm)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errorCode", is("BAD_REQUEST")));
     }
 
 }
