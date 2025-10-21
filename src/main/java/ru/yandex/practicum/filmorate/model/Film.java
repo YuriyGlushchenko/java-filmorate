@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.*;
 import lombok.Builder;
 import lombok.Data;
@@ -7,6 +8,8 @@ import ru.yandex.practicum.filmorate.validators.After;
 import ru.yandex.practicum.filmorate.validators.Marker;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 
 @Data
@@ -30,4 +33,8 @@ public class Film {
 
     @Positive(message = "Продолжительность должна быть положительной")
     private int duration;
+
+    @Builder.Default
+    @JsonIgnore  // Будет нельзя накручивать лайки просто указав их в передаваемом json
+    private Set<Integer> likes = new HashSet<>();
 }
