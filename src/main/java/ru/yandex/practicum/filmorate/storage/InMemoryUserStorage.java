@@ -1,20 +1,16 @@
 package ru.yandex.practicum.filmorate.storage;
 
-import jakarta.validation.Valid;
 import org.springframework.stereotype.Component;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import ru.yandex.practicum.filmorate.exceptions.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.validators.Marker;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 @Component
-public class InMemoryUserStorage implements UserStorage{
+public class InMemoryUserStorage implements UserStorage {
     private final Map<Integer, User> users = new HashMap<>();
 
     public Collection<User> getAllUsers() {
@@ -65,9 +61,7 @@ public class InMemoryUserStorage implements UserStorage{
     }
 
 
-
-
-    public Optional<User> getUserById(int id){
+    public Optional<User> getUserById(int id) {
         return Optional.ofNullable(users.get(id));
     }
 

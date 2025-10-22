@@ -1,10 +1,6 @@
 package ru.yandex.practicum.filmorate.storage;
 
-import jakarta.validation.Valid;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import ru.yandex.practicum.filmorate.exceptions.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 
@@ -15,7 +11,7 @@ import java.util.Optional;
 
 
 @Component
-public class InMemoryFilmStorage implements FilmStorage{
+public class InMemoryFilmStorage implements FilmStorage {
     private final Map<Integer, Film> films = new HashMap<>();
 
     public Collection<Film> findAll() {
@@ -52,7 +48,7 @@ public class InMemoryFilmStorage implements FilmStorage{
         throw new NotFoundException("Фильма с id = " + newFilm.getId() + " не найдено");
     }
 
-    public Optional<Film> getFilmById(int id){
+    public Optional<Film> getFilmById(int id) {
         return Optional.ofNullable(films.get(id));
     }
 

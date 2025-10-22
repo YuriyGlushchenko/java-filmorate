@@ -1,9 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
 import ru.yandex.practicum.filmorate.exceptions.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
@@ -29,11 +27,6 @@ public class UserService {
     public User update(User newUser) {
         return userStorage.update(newUser);
     }
-
-
-
-
-
 
 
     public void addToFriends(int userId, int friendId) {

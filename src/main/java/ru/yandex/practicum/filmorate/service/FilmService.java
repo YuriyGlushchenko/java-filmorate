@@ -1,7 +1,9 @@
 package ru.yandex.practicum.filmorate.service;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestBody;
 import ru.yandex.practicum.filmorate.exceptions.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
@@ -22,6 +24,14 @@ public class FilmService {
 
     public Collection<Film> findAll() {
         return filmStorage.findAll();
+    }
+
+    public Film create(Film film) {
+        return filmStorage.create(film);
+    }
+
+    public Film update(@RequestBody @Valid Film newFilm) {
+        return filmStorage.update(newFilm);
     }
 
     public Collection<Film> findMostLikedFilms(int count) {
