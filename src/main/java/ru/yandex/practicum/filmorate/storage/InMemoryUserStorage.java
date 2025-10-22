@@ -10,14 +10,16 @@ import ru.yandex.practicum.filmorate.exceptions.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.validators.Marker;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 public class InMemoryUserStorage implements UserStorage{
     private final Map<Integer, User> users = new HashMap<>();
 
+    public Collection<User> getAllUsers() {
+        return users.values();
+    }
 
     public User create(User user) {
 //        log.info("POST /users: Создание пользователя с логином {}", user.getLogin());
@@ -61,6 +63,9 @@ public class InMemoryUserStorage implements UserStorage{
 
         throw new NotFoundException("Пользователя с id = " + newUser.getId() + " не найдено");
     }
+
+
+
 
     public Optional<User> getUserById(int id){
         return Optional.ofNullable(users.get(id));
