@@ -34,7 +34,6 @@ public class Film {
     @Positive(message = "Продолжительность должна быть положительной")
     private int duration;
 
-    @Builder.Default
     @JsonIgnore  // Будет нельзя накручивать лайки просто указав их в передаваемом json
-    private Set<Integer> likes = new HashSet<>();
+    private final Set<Integer> likes = new HashSet<>();
 }

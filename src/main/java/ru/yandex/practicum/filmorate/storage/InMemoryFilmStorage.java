@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 
 @Component
@@ -49,6 +50,10 @@ public class InMemoryFilmStorage implements FilmStorage{
             return oldFilm;
         }
         throw new NotFoundException("Фильма с id = " + newFilm.getId() + " не найдено");
+    }
+
+    public Optional<Film> getFilmById(int id){
+        return Optional.ofNullable(films.get(id));
     }
 
     private Integer getNextId() {
