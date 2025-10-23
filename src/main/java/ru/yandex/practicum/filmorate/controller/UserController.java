@@ -50,6 +50,11 @@ public class UserController {
         return userService.update(newUser);
     }
 
+    @GetMapping("/{id}")
+    public User findUserById(@PathVariable int id) {
+        return userService.getUserById(id);
+    }
+
     @PutMapping("/{id}/friends/{friendId}")
     public void addToFriends(@PathVariable("id") int userId, @PathVariable int friendId) {
         userService.addToFriends(userId, friendId);

@@ -28,6 +28,12 @@ public class UserService {
         return userStorage.update(newUser);
     }
 
+    public User getUserById(int id) {
+        return userStorage
+                .getUserById(id)
+                .orElseThrow(() -> new NotFoundException("Пользователь с id = " + id + " не найден"));
+    }
+
 
     public void addToFriends(int userId, int friendId) {
         correctUserPair(userId, friendId)

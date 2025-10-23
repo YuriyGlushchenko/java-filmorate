@@ -1,0 +1,8 @@
+spring:
+  main:
+    log-startup-info: true # логирование деталей старта разрешено
+    banner-mode: off
+
+logging.level:
+  ru.yandex.practicum.quiz.QuizApp: WARN # настраиваем уровень логера
+

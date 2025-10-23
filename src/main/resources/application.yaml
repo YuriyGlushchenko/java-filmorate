@@ -1,0 +1,14 @@
+server:
+  port: 8080
+spring:
+  main:
+    log-startup-info: false
+    banner-mode: console
+  output:
+    ansi:
+      enabled: ALWAYS
+  banner.location: classpath:banner.txt
+
+logging.level:
+  org.zalando.logbook: ERROR
+  ru.yandex.practicum.filmorate: DEBUG
