@@ -15,25 +15,17 @@ public class InMemoryFilmStorage implements FilmStorage {
     private final Map<Integer, Film> films = new HashMap<>();
 
     public Collection<Film> findAll() {
-//        log.info("GET /users: Запрос на получение всех фильмов");
         return films.values();
     }
 
     public Film create(Film film) {
-//        log.info("POST /films: Создание фильма с названием {}", film.getName());
-//        log.trace("Полные данные пользователя: {}", film);
-
         film.setId(getNextId());
         films.put(film.getId(), film);
 
-//        log.debug("Фильм с названием {} успешно создан с ID: {}", film.getName(), film.getId());
         return film;
     }
 
     public Film update(Film newFilm) {
-//        log.debug("Обновление фильма с ID: {}", newFilm.getId());
-//        log.trace("Полные данные фильма для обновления: {}", newFilm);
-
         if (films.containsKey(newFilm.getId())) {
             Film oldFilm = films.get(newFilm.getId());
 
@@ -42,7 +34,6 @@ public class InMemoryFilmStorage implements FilmStorage {
             oldFilm.setDuration(newFilm.getDuration());
             oldFilm.setReleaseDate(newFilm.getReleaseDate());
 
-//            log.info("Фильм с ID {} успешно обновлен", newFilm.getId());
             return oldFilm;
         }
         throw new NotFoundException("Фильма с id = " + newFilm.getId() + " не найдено");

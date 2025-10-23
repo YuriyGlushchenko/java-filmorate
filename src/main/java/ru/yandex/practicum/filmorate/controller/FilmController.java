@@ -21,26 +21,18 @@ public class FilmController {
 
     @GetMapping
     public Collection<Film> findAll() {
-        log.info("GET /users: Запрос на получение всех фильмов");
-
         return filmService.findAll();
     }
 
     @PostMapping
     @Validated({Marker.OnCreate.class})
     public Film create(@Valid @RequestBody Film film) {
-        log.info("POST /films: Создание фильма с названием {}", film.getName());
-        log.trace("Полные данные пользователя: {}", film);
-
         return filmService.create(film);
     }
 
     @PutMapping
     @Validated({Marker.OnUpdate.class})
     public Film update(@RequestBody @Valid Film newFilm) {
-        log.debug("Обновление фильма с ID: {}", newFilm.getId());
-        log.trace("Полные данные фильма для обновления: {}", newFilm);
-
         return filmService.update(newFilm);
     }
 

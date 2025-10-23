@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.aspects;
+package ru.yandex.practicum.filmorate.aspects.LoggingAspects.controllers;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -6,6 +6,7 @@ import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -14,6 +15,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 @Aspect
 @Component
 @Slf4j
+@Order(10)
 public class ControllersLoggingAspect {
 
     // Pointcut для всех методов в контроллере
@@ -44,25 +46,13 @@ public class ControllersLoggingAspect {
             String requestURI = request.getRequestURI();
             String clientIP = request.getRemoteAddr();
             String userAgent = request.getHeader("User-Agent");
-
-            // 6. Формируем полный URL
-            StringBuffer requestURL = request.getRequestURL();
             String queryString = request.getQueryString();
-            String fullURL = queryString == null ?
-                    requestURL.toString() :
-                    requestURL.append('?').append(queryString).toString();
 
             // 7. Логирование
-            System.out.println("=== ДЕТАЛИ ЗАПРОСА ===");
-            System.out.println("Метод: " + httpMethod);
-            System.out.println("URL: " + fullURL);
-            System.out.println("URI: " + requestURI);
-            System.out.println("IP клиента: " + clientIP);
-            System.out.println("User-Agent: " + userAgent);
-            System.out.println("Метод контроллера: " + joinPoint.getSignature().getName());
-
+            log.info("=== Запрос {} на {} -> метод контроллера: {}", httpMethod, requestURI, joinPoint.getSignature().getName());
+            log.trace("=== IP: {}, userAgent: {}, queryString: {}", clientIP, userAgent, queryString);
         } catch (Exception e) {
-            System.out.println("❌ Ошибка при получении информации о запросе: " + e.getMessage());
+            log.info("❌ Ошибка при получении информации о запросе: " + e.getMessage());
         }
     }
 
