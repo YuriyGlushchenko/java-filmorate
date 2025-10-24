@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
@@ -13,19 +12,13 @@ import java.util.Collection;
 
 @RestController
 @RequestMapping("/users")
-@Slf4j
 @Validated
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
 
-
     @GetMapping
     public Collection<User> findAll() {
-        log.info("GET /users: Запрос на получение всех пользователей");
-
-        // сейчас UserController взаимодействует только с userService, а оттуда вызов просто прокидывается в UserStorage
-        // Так правильно? или правильнее добавить сюда зависимость от UserStorage и вызывать его методы напрямую?
         return userService.findAll();
     }
 
@@ -33,20 +26,12 @@ public class UserController {
     @PostMapping
     @Validated({Marker.OnCreate.class})
     public User create(@Valid @RequestBody User user) {
-        log.info("POST /users: Создание пользователя с логином {}", user.getLogin());
-        log.trace("Полные данные пользователя: {}", user);
-
-        userService.create(user);
-
-        return user;
+        return userService.create(user);
     }
 
     @PutMapping
     @Validated({Marker.OnUpdate.class})
     public User update(@RequestBody @Valid User newUser) {
-        log.debug("Обновление пользователя с ID: {}", newUser.getId());
-        log.trace("Полные данные пользователя для обновления: {}", newUser);
-
         return userService.update(newUser);
     }
 
