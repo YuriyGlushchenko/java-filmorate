@@ -16,24 +16,19 @@ import java.util.Set;
 @Builder(toBuilder = true)
 public class Film {
 
+    @JsonIgnore  // Будет нельзя накручивать лайки просто указав их в передаваемом json
+    private final Set<Integer> likes = new HashSet<>();
     @Null(groups = Marker.OnCreate.class, message = "При создании фильма id должен быть null")
     @NotNull(groups = Marker.OnUpdate.class, message = "При обновлении фильма id не может быть null")
     @Positive(groups = Marker.OnUpdate.class, message = "При обновлении фильма id должен быть положительным целым числом")
     private Integer id;
-
     @NotBlank(message = "Название фильма не может быть пустым")
     private String name;
-
     @Size(max = 200, message = "Описание не должно превышать 200 символов")
     private String description;
-
     @NotNull(message = "Дата релиза обязательна")
     @After(value = "1895-12-28", message = "Дата релиза должна быть после 28 декабря 1895 года")
     private LocalDate releaseDate;
-
     @Positive(message = "Продолжительность должна быть положительной")
     private int duration;
-
-    @JsonIgnore  // Будет нельзя накручивать лайки просто указав их в передаваемом json
-    private final Set<Integer> likes = new HashSet<>();
 }

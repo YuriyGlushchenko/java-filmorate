@@ -34,7 +34,7 @@ public class FilmService {
     }
 
     public Collection<Film> findMostLikedFilms(int count) {
-        if(count < 0){
+        if (count < 0) {
             throw new ValidationException("count", count, "Количество фильмов для отображения не может быть отрицательным");
         }
         Comparator<Film> likesCountComparator = Comparator.comparingInt((Film f) -> f.getLikes().size()).reversed();
