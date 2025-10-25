@@ -1,9 +1,10 @@
 package ru.yandex.practicum.filmorate.service;
 
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 import ru.yandex.practicum.filmorate.exceptions.exceptions.NotFoundException;
-import ru.yandex.practicum.filmorate.exceptions.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
@@ -11,6 +12,7 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 import java.util.Collection;
 import java.util.Comparator;
 
+@Validated
 @Service
 @RequiredArgsConstructor
 public class FilmService {
@@ -33,10 +35,9 @@ public class FilmService {
         return filmStorage.getFilmById(id).orElseThrow(() -> new NotFoundException("Фильм с id = " + id + " не найден"));
     }
 
-    public Collection<Film> findMostLikedFilms(int count) {
-        if (count < 0) {
-            throw new ValidationException("count", count, "Количество фильмов для отображения не может быть отрицательным");
-        }
+    public Collection<Film> findMostLikedFilms(
+            @Positive(message = "Количество фильмов для отображения должно быть положительным числом") int count) {
+
         Comparator<Film> likesCountComparator = Comparator.comparingInt((Film f) -> f.getLikes().size()).reversed();
 
         return filmStorage.findAll().stream().sorted(likesCountComparator).limit(count).toList();

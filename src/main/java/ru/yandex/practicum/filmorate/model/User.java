@@ -14,20 +14,25 @@ import java.util.Set;
 @Builder(toBuilder = true)
 public class User {
 
-    @JsonIgnore
-    private final Set<Integer> friends = new HashSet<>();
     @Null(groups = Marker.OnCreate.class, message = "При создании пользователя id должен быть null")
     @NotNull(groups = Marker.OnUpdate.class, message = "При обновлении пользователя id не может быть null")
     @Positive(groups = Marker.OnUpdate.class, message = "При обновлении пользователя id должен быть положительным целым числом")
     private Integer id;
+
     @NotBlank(message = "Email не может быть пустым")
     @Email(message = "Некорректный формат email")
     private String email;
+
     @NotBlank(message = "Логин не может быть пустым")
     @Pattern(regexp = "\\S+", message = "Логин не должен содержать пробелы")
     private String login;
+
     private String name;
+
     @NotNull
     @PastOrPresent(message = "Дата рождения не может быть в будущем")
     private LocalDate birthday;
+
+    @JsonIgnore
+    private final Set<Integer> friends = new HashSet<>();
 }
