@@ -1,11 +1,14 @@
 package ru.yandex.practicum.filmorate.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.*;
 import lombok.Builder;
 import lombok.Data;
 import ru.yandex.practicum.filmorate.validators.Marker;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @Builder(toBuilder = true)
@@ -18,7 +21,6 @@ public class User {
 
     @NotBlank(message = "Email не может быть пустым")
     @Email(message = "Некорректный формат email")
-    @NotNull
     private String email;
 
     @NotBlank(message = "Логин не может быть пустым")
@@ -27,8 +29,10 @@ public class User {
 
     private String name;
 
-    @PastOrPresent(message = "Дата рождения не может быть в будущем")
     @NotNull
+    @PastOrPresent(message = "Дата рождения не может быть в будущем")
     private LocalDate birthday;
 
+    @JsonIgnore
+    private final Set<Integer> friends = new HashSet<>();
 }
