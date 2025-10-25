@@ -5,6 +5,7 @@ import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -35,20 +36,6 @@ public class GlobalExceptionHandler {
         // Получаем все ошибки валидации полей
         List<FieldError> fieldErrors = ex.getBindingResult().getFieldErrors();
 
-        // Логирование:
-        String detailedLogMessage = fieldErrors.stream()
-                .map(error -> String.format(
-                        "Поле '%s' в объекте '%s': Отклоненное значение '%s'. Причина: %s",
-                        error.getField(),
-                        error.getObjectName(),
-                        error.getRejectedValue(),
-                        error.getDefaultMessage()
-                ))
-                .collect(Collectors.joining("; "));
-
-        logger.warn("Ошибки валидации: {}", detailedLogMessage);
-
-        // Ответ для клиента:
         List<ValidationError> validationErrors = fieldErrors.stream()
                 .map(fieldError -> new ValidationError(
                         fieldError.getField(),
@@ -65,15 +52,6 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ValidationErrorResponse handleValidationException(ValidationException ex) {
 
-        // Логирование:
-        String detailedLogMessage = String.format("Поле: %s, сообщение: %s, отклоненное значение: %s",
-                ex.getFieldName(),
-                ex.getMessage(),
-                ex.getRejectedValue());
-
-        logger.warn("Ошибки валидации: {}", detailedLogMessage);
-
-        // Ответ для клиента:
         List<ValidationError> validationErrors = List.of(
                 new ValidationError(ex.getFieldName(), ex.getMessage(), ex.getRejectedValue()));
 
@@ -84,15 +62,6 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorMessage handleNotFoundException(NotFoundException ex) {
 
-        // Логирование:
-        StackTraceElement topElement = ex.getStackTrace()[0];
-        String detailedLogMessage = String.format("%s -> %s -> %s",
-                topElement.getClassName(),
-                topElement.getMethodName(),
-                ex.getMessage());
-
-        logger.warn("Ошибка: {}", detailedLogMessage);
-
         return new ErrorMessage("NOT_FOUND", ex.getMessage());
     }
 
@@ -102,19 +71,6 @@ public class GlobalExceptionHandler {
 
         Set<ConstraintViolation<?>> violations = ex.getConstraintViolations();
 
-        // Логирование:
-        String detailedLogMessage = violations.stream()
-                .map(violation -> String.format(
-                        "Поле: '%s'. Отклоненное значение: '%s'. Причина: %s",
-                        violation.getPropertyPath().toString(),
-                        violation.getInvalidValue(),
-                        violation.getMessage()
-                ))
-                .collect(Collectors.joining("; "));
-
-        logger.warn("Ошибки валидации: {}", detailedLogMessage);
-
-        // Ответ для клиента:
         List<ValidationError> validationErrors = violations.stream()
                 .map(violation -> new ValidationError(
                         violation.getPropertyPath().toString(),
@@ -124,7 +80,13 @@ public class GlobalExceptionHandler {
                 .collect(Collectors.toList());
 
         return new ValidationErrorResponse("CONSTRAINT_VIOLATIONS", validationErrors);
+    }
 
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorMessage handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
+
+        return new ErrorMessage("BAD_REQUEST", "Required request body is missing");
     }
 
 
