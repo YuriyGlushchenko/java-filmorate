@@ -49,7 +49,7 @@ public class ControllersLoggingAspect {
             String queryString = request.getQueryString();
 
             // 7. Логирование
-            log.info("=== Запрос {} на {} -> метод контроллера: {}", httpMethod, requestURI, joinPoint.getSignature().getName());
+            log.info("===== Запрос {} на {} -> метод контроллера: {} =====", httpMethod, requestURI, joinPoint.getSignature().getName());
             log.trace("=== IP: {}, userAgent: {}, queryString: {}", clientIP, userAgent, queryString);
         } catch (Exception e) {
             log.info("❌ Ошибка при получении информации о запросе: " + e.getMessage());

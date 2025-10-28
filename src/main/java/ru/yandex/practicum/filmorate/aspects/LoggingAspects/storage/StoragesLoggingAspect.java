@@ -56,6 +56,6 @@ public class StoragesLoggingAspect {
 
         String methodName = signature.getName();
 
-        log.error("Исключение в методе {} -> {}: {}", simpleClassName, methodName, ex.getMessage());
+        log.warn("Исключение в методе {} -> {}: {}", simpleClassName, methodName, ex.getMessage());
     }
 }

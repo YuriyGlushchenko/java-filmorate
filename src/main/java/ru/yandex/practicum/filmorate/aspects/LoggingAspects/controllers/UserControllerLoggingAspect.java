@@ -38,6 +38,6 @@ public class UserControllerLoggingAspect {
     public void logAfterThrowing(JoinPoint joinPoint, Exception ex) {
         String methodName = joinPoint.getSignature().getName();
 
-        log.error("Исключение в методе userController -> {}: {}", methodName, ex.getMessage());
+        log.warn("Исключение в методе userController -> {}: {}", methodName, ex.getMessage());
     }
 }

@@ -38,6 +38,6 @@ public class FilmControllerLoggingAspect {
     public void logAfterThrowing(JoinPoint joinPoint, Exception ex) {
         String methodName = joinPoint.getSignature().getName();
 
-        log.error("Исключение в методе filmController -> {}: {}", methodName, ex.getMessage());
+        log.warn("Исключение в методе filmController -> {}: {}", methodName, ex.getMessage());
     }
 }

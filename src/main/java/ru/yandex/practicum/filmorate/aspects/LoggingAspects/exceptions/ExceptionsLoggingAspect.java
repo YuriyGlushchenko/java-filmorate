@@ -25,14 +25,12 @@ public class ExceptionsLoggingAspect {
 
     private static final Logger logger = LoggerFactory.getLogger(ExceptionsLoggingAspect.class);
 
-    // Точка среза для всех методов в GlobalExceptionHandler
     @Pointcut("execution(* ru.yandex.practicum.filmorate.exceptions.GlobalExceptionHandler.*(..))")
     public void exceptionHandlerMethods() {}
 
     // Единый метод для логирования всех обработчиков исключений
     @Before("exceptionHandlerMethods()")
     public void logExceptionHandler(JoinPoint joinPoint) {
-        // Получаем информацию о вызываемом методе
         String handlerMethodName = joinPoint.getSignature().getName();
 
         // Получаем перехваченное исключение (первый аргумент метода)
@@ -54,7 +52,7 @@ public class ExceptionsLoggingAspect {
                 .append(" | Тип исключения: ").append(exception.getClass().getSimpleName())
                 .append(" | Сообщение: ").append(exception.getMessage());
 
-        // Добавляем детальную информацию в зависимости от типа исключения
+        // Добавляем детальную информацию в зависимости от типа исключения если она есть
         switch (exception) {
             case MethodArgumentNotValidException methodArgumentNotValidException ->
                     message.append(" | ").append(getValidationDetails(methodArgumentNotValidException));
