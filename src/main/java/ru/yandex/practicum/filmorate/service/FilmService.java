@@ -38,17 +38,17 @@ public class FilmService {
     public Collection<Film> findMostLikedFilms(
             @Positive(message = "Количество фильмов для отображения должно быть положительным числом") int count) {
 
-        Comparator<Film> likesCountComparator = Comparator.comparingInt((Film f) -> f.getLikes().size()).reversed();
+        Comparator<Film> likesCountComparator = Comparator.comparingInt((Film f) -> f.getLikesUserIds().size()).reversed();
 
         return filmStorage.findAll().stream().sorted(likesCountComparator).limit(count).toList();
     }
 
     public void addLike(int filmId, int userId) {
-        getValidatedLikedFilm(filmId, userId).getLikes().add(userId);
+        getValidatedLikedFilm(filmId, userId).getLikesUserIds().add(userId);
     }
 
     public void removeLike(int filmId, int userId) {
-        getValidatedLikedFilm(filmId, userId).getLikes().remove(userId);
+        getValidatedLikedFilm(filmId, userId).getLikesUserIds().remove(userId);
     }
 
     private Film getValidatedLikedFilm(int filmId, int userId) {
