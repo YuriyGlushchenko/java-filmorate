@@ -1,14 +1,29 @@
 server:
   port: 8080
+
 spring:
+  sql:
+    init:
+      mode: always  # Всегда выполнять init скрипты
+  datasource:
+    url: jdbc:h2:file:./db/filmorate;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL  # Сохранение в файл в папке db
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: password
+  h2:
+    console:
+      enabled: true
+
   main:
     log-startup-info: false
     banner-mode: console
   output:
     ansi:
       enabled: ALWAYS
-  banner.location: classpath:banner.txt
+  banner:
+    location: classpath:banner.txt
 
-logging.level:
-  org.zalando.logbook: ERROR
-  ru.yandex.practicum.filmorate: DEBUG
+logging:
+  level:
+    org.zalando.logbook: ERROR
+    ru.yandex.practicum.filmorate: DEBUG
