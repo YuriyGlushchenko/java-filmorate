@@ -27,3 +27,7 @@ logging:
   level:
     org.zalando.logbook: ERROR
     ru.yandex.practicum.filmorate: DEBUG
+
+filmorate-app:
+  storage:
+    user-repository: "UserDbRepository"

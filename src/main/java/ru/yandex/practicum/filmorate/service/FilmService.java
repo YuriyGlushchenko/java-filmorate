@@ -2,12 +2,14 @@ package ru.yandex.practicum.filmorate.service;
 
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
-import ru.yandex.practicum.filmorate.exceptions.exceptions.NotFoundException;
-import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.dal.FilmStorage;
 import ru.yandex.practicum.filmorate.dal.UserStorage;
+import ru.yandex.practicum.filmorate.exceptions.exceptions.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -18,6 +20,15 @@ import java.util.Comparator;
 public class FilmService {
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
+
+    // Вместо @Qualifier и хардкода выбираем конкретную реализацию бинов в файле настроек. Используется SpEL.
+    @Autowired
+    public FilmService(
+            @Value("#{@${filmorate-app.storage.user-repository}}") UserStorage userStorage,
+            FilmStorage filmStorage) {
+        this.userStorage = userStorage;
+        this.filmStorage = filmStorage;
+    }
 
     public Collection<Film> findAll() {
         return filmStorage.findAll();

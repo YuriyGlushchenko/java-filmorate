@@ -1,6 +1,9 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
@@ -12,9 +15,15 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class UserService {
     private final UserStorage userStorage;
+
+    // Вместо @Qualifier и хардкода выбираем конкретную реализацию бинов в файле настроек. Используется SpEL.
+    // *{} - Spring Expression Language, внутри @имя_бина, ${} - значение из application.yml.
+    @Autowired
+    public UserService(@Value("#{@${filmorate-app.storage.user-repository}}") UserStorage userStorage) {
+        this.userStorage = userStorage;
+    }
 
     public Collection<User> findAll() {
         return userStorage.getAllUsers();
