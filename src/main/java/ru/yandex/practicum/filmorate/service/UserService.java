@@ -1,10 +1,10 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exceptions.exceptions.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exceptions.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.dal.UserStorage;
@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class UserService {
     private final UserStorage userStorage;
@@ -25,11 +26,33 @@ public class UserService {
         this.userStorage = userStorage;
     }
 
-    public Collection<User> findAll() {
+    public Collection<User> getAllUsers() {
         return userStorage.getAllUsers();
     }
 
+//    public List<UserDto> getUsers() {
+//        return userRepository.findAll()
+//                .stream()
+//                .map(UserMapper::mapToUserDto)
+//                .collect(Collectors.toList());
+//    }
+
     public User create(User user) {
+        // toDo переписать
+        Optional<User> alreadyExistUser = userStorage.getUserByEmail(user.getEmail());
+        if (alreadyExistUser.isPresent()) {
+            throw new DuplicatedDataException("Пользователь с таким E-mail уже зарегистрирован");
+        }
+        alreadyExistUser = userStorage.getUserByLogin(user.getLogin());
+        if (alreadyExistUser.isPresent()) {
+            throw new DuplicatedDataException("Пользователь с таким Login уже зарегистрирован");
+        }
+
+        if (user.getName() == null || user.getName().isBlank()) {
+            log.trace("Пользователю с именем ->|{}|<- присвоено имя {}", user.getName(), user.getLogin());
+            user.setName(user.getLogin());
+        }
+
         return userStorage.create(user);
     }
 

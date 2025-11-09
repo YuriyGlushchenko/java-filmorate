@@ -20,12 +20,24 @@ public class InMemoryUserStorage implements UserStorage {
         return users.values();
     }
 
+    @Override
+    public Optional<User> getUserByEmail(String email) {
+        return users.values()
+                .stream()
+                .filter(u -> u.getEmail().equals(email))
+                .findFirst();
+    }
+
+    @Override
+    public Optional<User> getUserByLogin(String login) {
+        return users.values()
+                .stream()
+                .filter(u -> u.getLogin().equals(login))
+                .findFirst();
+    }
+
     public User create(User user) {
         user.setId(getNextId());
-        if (user.getName() == null || user.getName().isBlank()) {
-            log.trace("Пользователю с именем ->|{}|<- присвоено имя {}", user.getName(), user.getLogin());
-            user.setName(user.getLogin());
-        }
 
         users.put(user.getId(), user);
 

@@ -19,7 +19,7 @@ public class UserController {
 
     @GetMapping
     public Collection<User> findAll() {
-        return userService.findAll();
+        return userService.getAllUsers();
     }
 
 
