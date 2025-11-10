@@ -36,6 +36,14 @@ public class InMemoryUserStorage implements UserStorage {
                 .findFirst();
     }
 
+    @Override
+    public Optional<User> findDuplicateUser(String email, String login) {
+        return users.values()
+                .stream()
+                .filter(u -> u.getLogin().equals(login) || u.getEmail().equals(email))
+                .findFirst();
+    }
+
     public User create(User user) {
         user.setId(getNextId());
 

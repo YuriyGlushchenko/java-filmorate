@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.yandex.practicum.filmorate.exceptions.exceptions.DuplicatedDataException;
+import ru.yandex.practicum.filmorate.exceptions.exceptions.InternalServerException;
 import ru.yandex.practicum.filmorate.exceptions.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.exceptions.responses.ErrorMessage;
@@ -91,10 +92,17 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(DuplicatedDataException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorMessage handleDuplicatedDataException(DuplicatedDataException ex) {
 
-        return new ErrorMessage("BAD_REQUEST", ex.getMessage());
+        return new ErrorMessage("CONFLICT", ex.getMessage());
+    }
+
+    @ExceptionHandler(InternalServerException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorMessage handleInternalServerException(InternalServerException ex) {
+
+        return new ErrorMessage("INTERNAL_SERVER_ERROR", ex.getMessage());
     }
 
 

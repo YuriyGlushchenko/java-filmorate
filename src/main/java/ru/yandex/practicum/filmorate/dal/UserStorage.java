@@ -18,4 +18,6 @@ public interface UserStorage {
 
     Optional<User> getUserByLogin(String email);
 
+    Optional<User> findDuplicateUser(String email, String login);
+
 }

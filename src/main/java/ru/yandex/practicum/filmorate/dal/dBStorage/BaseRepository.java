@@ -5,8 +5,10 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
+import ru.yandex.practicum.filmorate.exceptions.exceptions.InternalServerException;
 //import ru.yandex.practicum.catsgram.exception.InternalServerException;
 
+import javax.security.auth.callback.Callback;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.List;
@@ -35,10 +37,15 @@ public class BaseRepository<T> {
         return rowsDeleted > 0;
     }
 
+    protected boolean delete(String query, Object... params) {
+        int rowsDeleted = jdbc.update(query, params);
+        return rowsDeleted > 0;
+    }
+
     protected void update(String query, Object... params) {
         int rowsUpdated = jdbc.update(query, params);
         if (rowsUpdated == 0) {
-//            throw new InternalServerException("Не удалось обновить данные");
+            throw new InternalServerException("Не удалось обновить данные");
         }
     }
 
@@ -54,12 +61,10 @@ public class BaseRepository<T> {
 
         Integer id = keyHolder.getKeyAs(Integer.class);
 
-        // Возвращаем id нового пользователя
         if (id != null) {
             return id;
         } else {
-//            throw new InternalServerException("Не удалось сохранить данные");
-            throw new RuntimeException();
+            throw new InternalServerException("Неожиданная ошибка: данные не обновились");
         }
     }
 }

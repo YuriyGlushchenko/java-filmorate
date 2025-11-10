@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 public class StoragesLoggingAspect {
 
     // Pointcut для всех методов в пакете storage
-    @Pointcut("execution(* ru.yandex.practicum.filmorate.storage.*.*(..))")
+    @Pointcut("execution(* ru.yandex.practicum.filmorate.dal..*(..))")
     public void allStorageMethods() {
     }
 
