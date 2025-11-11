@@ -31,3 +31,4 @@ logging:
 filmorate-app:
   storage:
     user-repository: "UserDbRepository"
+    film-repository: "FilmDBRepository"

@@ -18,32 +18,32 @@ import java.util.Comparator;
 @Service
 @RequiredArgsConstructor
 public class FilmService {
-    private final FilmStorage filmStorage;
-    private final UserStorage userStorage;
+    private final FilmStorage filmRepository;
+    private final UserStorage userRepository;
 
-    // Вместо @Qualifier и хардкода выбираем конкретную реализацию бинов в файле настроек. Используется SpEL.
+    // Вместо @Qualifier выбираем конкретную реализацию бинов в файле настроек. Используется SpEL.
     @Autowired
     public FilmService(
-            @Value("#{@${filmorate-app.storage.user-repository}}") UserStorage userStorage,
-            FilmStorage filmStorage) {
-        this.userStorage = userStorage;
-        this.filmStorage = filmStorage;
+            @Value("#{@${filmorate-app.storage.user-repository}}") UserStorage userRepository,
+            @Value("#{@${filmorate-app.storage.film-repository}}") FilmStorage filmRepository) {
+        this.userRepository = userRepository;
+        this.filmRepository = filmRepository;
     }
 
     public Collection<Film> findAll() {
-        return filmStorage.findAll();
+        return filmRepository.findAll();
     }
 
     public Film create(Film film) {
-        return filmStorage.create(film);
+        return filmRepository.create(film);
     }
 
     public Film update(Film newFilm) {
-        return filmStorage.update(newFilm);
+        return filmRepository.update(newFilm);
     }
 
     public Film getFilmById(int id) {
-        return filmStorage.getFilmById(id).orElseThrow(() -> new NotFoundException("Фильм с id = " + id + " не найден"));
+        return filmRepository.getFilmById(id).orElseThrow(() -> new NotFoundException("Фильм с id = " + id + " не найден"));
     }
 
     public Collection<Film> findMostLikedFilms(
@@ -51,7 +51,7 @@ public class FilmService {
 
         Comparator<Film> likesCountComparator = Comparator.comparingInt((Film f) -> f.getLikesUserIds().size()).reversed();
 
-        return filmStorage.findAll().stream().sorted(likesCountComparator).limit(count).toList();
+        return filmRepository.findAll().stream().sorted(likesCountComparator).limit(count).toList();
     }
 
     public void addLike(int filmId, int userId) {
@@ -63,10 +63,10 @@ public class FilmService {
     }
 
     private Film getValidatedLikedFilm(int filmId, int userId) {
-        userStorage.getUserById(userId)
+        userRepository.getUserById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id = " + userId + " не найден"));
 
-        return filmStorage.getFilmById(filmId)
+        return filmRepository.getFilmById(filmId)
                 .orElseThrow(() -> new NotFoundException("Фильм с id = " + filmId + " не найден"));
     }
 

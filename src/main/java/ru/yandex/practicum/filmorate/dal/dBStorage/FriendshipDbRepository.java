@@ -14,7 +14,7 @@ import java.util.Optional;
 @Repository("FriendshipDbRepository")
 public class FriendshipDbRepository extends BaseRepository<Friendship> implements FriendshipStorage {
     private static final String INSERT_QUERY = "INSERT INTO friendship (user_id, friend_id, status_id) VALUES (?, ?, ?)";
-    private static final String FIND_BY_USERS_IDS_QUERY = "SELECT * FROM friendship WHERE user_id = ? AND friend_id = ?";
+//    private static final String FIND_BY_USERS_IDS_QUERY = "SELECT * FROM friendship WHERE user_id = ? AND friend_id = ?";
     private static final String FIND_USER_FRIENDS = "SELECT f.friend_id As user_id, uf.email, uf.login, uf.name, uf.birthday" +
             " FROM friendship AS f JOIN users AS uf ON f.friend_id = uf.user_id WHERE f.user_id = ? ;";
     private static final String DELETE_FRIEND_QUERY = "DELETE FROM friendship WHERE user_id = ? AND friend_id = ?";
@@ -40,10 +40,10 @@ public class FriendshipDbRepository extends BaseRepository<Friendship> implement
         return friendship;
     }
 
-    @Override
-    public Optional<Friendship> getFriendshipByUsersIds(int userId, int friendId) {
-        return findOne(FIND_BY_USERS_IDS_QUERY, userId, friendId);
-    }
+//    @Override
+//    public Optional<Friendship> getFriendshipByUsersIds(int userId, int friendId) {
+//        return findOne(FIND_BY_USERS_IDS_QUERY, userId, friendId);
+//    }
 
     @Override
     public List<User> getUserFriends(int userId) {
