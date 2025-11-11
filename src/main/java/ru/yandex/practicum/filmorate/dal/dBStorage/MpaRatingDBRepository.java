@@ -16,7 +16,7 @@ import java.util.Optional;
 @Repository
 public class MpaRatingDBRepository extends BaseRepository<MpaRating> implements MpaRatingStorage {
     private static final String FIND_ALL_QUERY = "SELECT * FROM rating";
-    private static final String FIND_BY_ID_QUERY = "SELECT * FROM rating WHERE genre_id = ?";
+    private static final String FIND_BY_ID_QUERY = "SELECT * FROM rating WHERE rating_id = ?";
 
     public MpaRatingDBRepository(JdbcTemplate jdbc, RowMapper<MpaRating> mapper) {
         super(jdbc, mapper);

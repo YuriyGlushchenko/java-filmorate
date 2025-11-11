@@ -9,12 +9,14 @@ import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Repository
 public class GenreDBRepository extends BaseRepository<Genre> implements GenreStorage {
     private static final String FIND_ALL_QUERY = "SELECT * FROM genre";
     private static final String FIND_BY_ID_QUERY = "SELECT * FROM genre WHERE genre_id = ?";
+    private static final String FIND_FILM_GENRES_ID_QUERY = "SELECT genre_id FROM films_genre WHERE film_id = ?";
 
     public GenreDBRepository(JdbcTemplate jdbc, RowMapper<Genre> mapper) {
         super(jdbc, mapper);
@@ -29,4 +31,28 @@ public class GenreDBRepository extends BaseRepository<Genre> implements GenreSto
     public Optional<Genre> getGenreById(int id) {
         return findOne(FIND_BY_ID_QUERY, id);
     }
+
+    public List<Genre> getFilmGenresByFilmId(int filmId){
+        return findMany(FIND_FILM_GENRES_ID_QUERY, filmId);
+    }
+
+    public void saveFilmGenres(int filmId, List<Genre> genres) {
+        // Сначала удаляем все существующие жанры для этого фильма
+        String deleteSql = "DELETE FROM films_genre WHERE film_id = ?";
+        jdbc.update(deleteSql, filmId);
+
+        // Если список жанров не пустой, добавляем новые связи
+        if (genres != null && !genres.isEmpty()) {
+            String insertSql = "INSERT INTO films_genre (film_id, genre_id) VALUES (?, ?)";
+
+            // Создаем batch запрос для эффективной вставки
+            List<Object[]> batchArgs = genres.stream()
+                    .map(genre -> new Object[]{filmId, genre.getId()})
+                    .collect(Collectors.toList());
+
+            jdbc.batchUpdate(insertSql, batchArgs);
+        }
+    }
+
+
 }

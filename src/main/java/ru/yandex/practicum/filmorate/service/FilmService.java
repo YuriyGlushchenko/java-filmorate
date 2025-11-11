@@ -7,12 +7,15 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 import ru.yandex.practicum.filmorate.dal.FilmStorage;
+import ru.yandex.practicum.filmorate.dal.GenreStorage;
+import ru.yandex.practicum.filmorate.dal.MpaRatingStorage;
 import ru.yandex.practicum.filmorate.dal.UserStorage;
 import ru.yandex.practicum.filmorate.exceptions.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.MpaRating;
 
-import java.util.Collection;
-import java.util.Comparator;
+import java.util.*;
 
 @Validated
 @Service
@@ -20,14 +23,20 @@ import java.util.Comparator;
 public class FilmService {
     private final FilmStorage filmRepository;
     private final UserStorage userRepository;
+    private final MpaRatingStorage mpaRatingRepository;
+    private final GenreStorage genreRepository;
 
     // Вместо @Qualifier выбираем конкретную реализацию бинов в файле настроек. Используется SpEL.
     @Autowired
     public FilmService(
             @Value("#{@${filmorate-app.storage.user-repository}}") UserStorage userRepository,
-            @Value("#{@${filmorate-app.storage.film-repository}}") FilmStorage filmRepository) {
+            @Value("#{@${filmorate-app.storage.film-repository}}") FilmStorage filmRepository,
+            MpaRatingStorage mpaRatingRepository,
+            GenreStorage genreRepository) {
         this.userRepository = userRepository;
         this.filmRepository = filmRepository;
+        this.mpaRatingRepository = mpaRatingRepository;
+        this.genreRepository = genreRepository;
     }
 
     public Collection<Film> findAll() {
@@ -35,6 +44,7 @@ public class FilmService {
     }
 
     public Film create(Film film) {
+        // toDo дописать сохранение жанров в genreRepository методом saveFilmGenres
         return filmRepository.create(film);
     }
 
@@ -43,7 +53,18 @@ public class FilmService {
     }
 
     public Film getFilmById(int id) {
-        return filmRepository.getFilmById(id).orElseThrow(() -> new NotFoundException("Фильм с id = " + id + " не найден"));
+        Film film =  filmRepository.getFilmById(id).orElseThrow(() -> new NotFoundException("Фильм с id = " + id + " не найден"));
+
+        MpaRating rating = mpaRatingRepository.getMpaRatingById(film.getMpa().getId()).orElseThrow(
+                ()-> new RuntimeException("Категория фильма не найдена")
+        );
+
+        Set<Genre> genres = new HashSet<>(genreRepository.getFilmGenresByFilmId(id));
+
+        film.setMpa(rating);
+        film.setGenres(genres);
+
+        return film;
     }
 
     public Collection<Film> findMostLikedFilms(

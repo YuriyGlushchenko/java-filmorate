@@ -10,4 +10,6 @@ public interface GenreStorage {
     List<Genre> findAll();
 
     Optional<Genre> getGenreById(int id);
+
+    List<Genre> getFilmGenresByFilmId(int filmId);
 }
