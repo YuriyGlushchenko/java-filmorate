@@ -7,7 +7,7 @@ import java.time.LocalDate;
 
 @Data
 @Builder
-public class FriendDTO {
+public class UserDTO {
     private int id;
     private String email;
     private String name;

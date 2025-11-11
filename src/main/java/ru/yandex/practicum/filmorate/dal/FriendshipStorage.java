@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.dal;
 import ru.yandex.practicum.filmorate.model.Friendship;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,7 +16,7 @@ public interface FriendshipStorage {
 
     void removeFromFriends(int userId, int friendId);
 
-    List<User> getMutualFriends(int userA, int userB);
+    List<User> findCommonFriends(int userA, int userB);
 
 //     List<User> getUserFriends(int userId);
 //

@@ -5,13 +5,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dal.FriendshipStorage;
+import ru.yandex.practicum.filmorate.dto.UserDTO;
 import ru.yandex.practicum.filmorate.exceptions.exceptions.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exceptions.exceptions.NotFoundException;
+import ru.yandex.practicum.filmorate.mapper.UserMapper;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.dal.UserStorage;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -31,19 +32,14 @@ public class UserService {
         this.friendshipRepository = friendshipRepository;
     }
 
-    public Collection<User> getAllUsers() {
-        return userRepository.getAllUsers();
+    public Collection<UserDTO> getAllUsers() {
+        return userRepository.getAllUsers().stream()
+                .map(UserMapper::mapToUserDto)
+                .collect(Collectors.toList());
     }
 
-//    public List<UserDto> getUsers() {
-//        return userRepository.findAll()
-//                .stream()
-//                .map(UserMapper::mapToUserDto)
-//                .collect(Collectors.toList());
-//    }
-
     public User create(User user) {
-        Optional<User> alreadyExistUser = userRepository.findDuplicateUser(user.getEmail(), user.getLogin());
+        Optional<User> alreadyExistUser = userRepository.findDuplicateDataUser(user.getEmail(), user.getLogin());
 
         if(alreadyExistUser.isPresent()){
             User existUser = alreadyExistUser.get();
@@ -63,7 +59,7 @@ public class UserService {
     }
 
     public User update(User user) {
-        Optional<User> alreadyExistUser = userRepository.findDuplicateUser(user.getEmail(), user.getLogin());
+        Optional<User> alreadyExistUser = userRepository.findDuplicateDataUser(user.getEmail(), user.getLogin());
 
         if(alreadyExistUser.isPresent()){
             if(alreadyExistUser.get().getId() != user.getId()){
@@ -76,63 +72,8 @@ public class UserService {
     }
 
     public User getUserById(int id) {
-        Optional<User> user = userRepository.getUserById(id);
-
-
-
         return userRepository.getUserById(id)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id = " + id + " не найден"));
-    }
-
-
-    public void addToFriends(int userId, int friendId) {
-        correctUserPair(userId, friendId)
-                .forEach(user -> user.getFriends().add(userId == user.getId() ? friendId : userId));
-    }
-
-    public void removeFromFriends(int userId, int friendId) {
-        correctUserPair(userId, friendId)
-                .forEach(user -> user.getFriends().remove(userId == user.getId() ? friendId : userId));
-    }
-
-    public List<User> getUserFriends(int userId) {
-        User user = userRepository.getUserById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id = " + userId + "не найден"));
-
-        return user
-                .getFriends()
-                .stream()
-                .map(id -> userRepository.getUserById(id).get())
-                .collect(Collectors.toList());
-    }
-
-    public List<User> getMutualFriends(int userA, int userB) {
-        List<User> userPair = correctUserPair(userA, userB);
-
-        return userPair
-                .getFirst()
-                .getFriends()
-                .stream()
-                .filter(id -> userPair.getLast().getFriends().contains(id))
-                .map(id -> userRepository
-                        .getUserById(id)
-                        .orElseThrow(() -> new NotFoundException("В списке друзей несуществующий пользователь с id = " + id)))
-                .collect(Collectors.toList());
-    }
-
-    private List<User> correctUserPair(int firstUserId, int secondUserId) {
-        Optional<User> optionalFirstUser = userRepository.getUserById(firstUserId);
-        Optional<User> optionalSecondUser = userRepository.getUserById(secondUserId);
-
-        if (optionalFirstUser.isEmpty()) {
-            throw new NotFoundException("Пользователь с id = " + firstUserId + "не найден");
-        }
-        if (optionalSecondUser.isEmpty()) {
-            throw new NotFoundException("Пользователь с id = " + secondUserId + "не найден");
-        }
-
-        // ordered collection → "упорядоченная коллекция" (сохраняет порядок элементов)
-        return List.of(optionalFirstUser.get(), optionalSecondUser.get());
     }
 
 }

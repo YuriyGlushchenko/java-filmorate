@@ -14,10 +14,10 @@ public interface UserStorage {
 
     Optional<User> getUserById(int id);
 
-    Optional<User> getUserByEmail(String email);
+//    Optional<User> getUserByEmail(String email);
+//
+//    Optional<User> getUserByLogin(String email);
 
-    Optional<User> getUserByLogin(String email);
-
-    Optional<User> findDuplicateUser(String email, String login);
+    Optional<User> findDuplicateDataUser(String email, String login);
 
 }

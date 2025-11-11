@@ -8,9 +8,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dal.FriendshipStorage;
 import ru.yandex.practicum.filmorate.dal.UserStorage;
-import ru.yandex.practicum.filmorate.dto.FriendDTO;
+import ru.yandex.practicum.filmorate.dto.UserDTO;
+import ru.yandex.practicum.filmorate.exceptions.exceptions.InternalServerException;
 import ru.yandex.practicum.filmorate.exceptions.exceptions.NotFoundException;
-import ru.yandex.practicum.filmorate.mapper.FriendMapper;
+import ru.yandex.practicum.filmorate.mapper.UserMapper;
 import ru.yandex.practicum.filmorate.model.Friendship;
 import ru.yandex.practicum.filmorate.model.FriendshipStatus;
 import ru.yandex.practicum.filmorate.model.User;
@@ -36,7 +37,7 @@ public class FriendshipService {
 
     public Friendship addToFriends(int userId, int friendId) {
 
-        List<User> userPair = correctUserPair(userId, friendId);
+        validateUsersExist(userId, friendId);
 
         Friendship friendship = Friendship.builder()
                 .userId(userId)
@@ -49,49 +50,40 @@ public class FriendshipService {
     }
 
         public void removeFromFriends(int userId, int friendId) {
-            List<User> userPair = correctUserPair(userId, friendId);
+            validateUsersExist(userId, friendId);
 
             friendshipRepository.removeFromFriends(userId,friendId);
 
 
     }
 
-    public List<FriendDTO> getUserFriends(int userId) {
-        Optional<User> userOptional = userRepository.getUserById(userId);
-
-        if(userOptional.isEmpty()){
-            log.debug("Пользователь с id={} не найден", userId);
-            throw new NotFoundException("Данные не обновлены. Пользователь с id=" + userId + " не найден");
-        }
-
+    public List<UserDTO> getUserFriends(int userId) {
+        validateUsersExist(userId);
 
         List<User> friends = friendshipRepository.getUserFriends(userId);
         return friends.stream()
-                .map(FriendMapper::mapToFriendDto)
+                .map(UserMapper::mapToUserDto)
                 .toList();
     }
 
-    public List<User> getMutualFriends(int userA, int userB) {
-        List<User> userPair = correctUserPair(userA, userB);
+    public List<User> findCommonFriends(int userA, int userB) {
+        validateUsersExist(userA, userB);
 
-        friendshipRepository.getMutualFriends(userA, userB);
-
-        return userPair;
-
+        return friendshipRepository.findCommonFriends(userA, userB);
     }
 
-    private List<User> correctUserPair(int firstUserId, int secondUserId) {
-        Optional<User> optionalFirstUser = userRepository.getUserById(firstUserId);
-        Optional<User> optionalSecondUser = userRepository.getUserById(secondUserId);
-
-        if (optionalFirstUser.isEmpty()) {
-            throw new NotFoundException("Пользователь с id = " + firstUserId + "не найден");
-        }
-        if (optionalSecondUser.isEmpty()) {
-            throw new NotFoundException("Пользователь с id = " + secondUserId + "не найден");
+    private void validateUsersExist(int... userIds) {
+        if (userIds == null || userIds.length == 0) {
+            throw new InternalServerException("Список ID пользователей не может быть пустым");
         }
 
-        // ordered collection → "упорядоченная коллекция" (сохраняет порядок элементов)
-        return List.of(optionalFirstUser.get(), optionalSecondUser.get());
+        for (int userId : userIds) {
+            Optional<User> userOptional = userRepository.getUserById(userId);
+
+            if(userOptional.isEmpty()){
+                log.debug("Пользователь с id={} не найден", userId);
+                throw new NotFoundException("Данные не обновлены. Пользователь с id=" + userId + " не найден");
+            }
+        }
     }
 }

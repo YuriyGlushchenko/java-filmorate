@@ -2,11 +2,11 @@ package ru.yandex.practicum.filmorate.mapper;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import ru.yandex.practicum.filmorate.dto.FriendDTO;
+import ru.yandex.practicum.filmorate.dto.UserDTO;
 import ru.yandex.practicum.filmorate.model.User;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class FriendMapper {
+public final class UserMapper {
 //    public static User mapToUser(NewUserRequest request) {
 //        User user = new User();
 //        user.setUsername(request.getUsername());
@@ -17,8 +17,8 @@ public final class FriendMapper {
 //        return user;
 //    }
 
-    public static FriendDTO mapToFriendDto(User user) {
-        return FriendDTO.builder()
+    public static UserDTO mapToUserDto(User user) {
+        return UserDTO.builder()
                 .id(user.getId())
                 .email(user.getEmail())
                 .name(user.getName())

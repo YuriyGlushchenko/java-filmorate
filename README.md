@@ -15,9 +15,7 @@ SELECT *
 FROM users
 WHERE id = 1;
 ```
-
-- Получение списка всех друзей пользователя по id.    
-Если для каждой пары хранится по 2 записи (т.е. учитывается направление дружбы)
+- Получение списка всех друзей пользователя по id.
 ```sql
 SELECT 
 	f.user_id AS user_id,
@@ -31,68 +29,17 @@ JOIN users u ON f.friend_id = u.user_id
 JOIN status s ON f.status_id = s.status_id 
 WHERE f.user_id = 1 AND s.name = 'CONFIRMED'
 ```  
-Если для каждой пары друзей будет храниться только одна запись в таблице friendship:
 
-```SQL
-SELECT 
-	f.user_id AS user_id,
-	f.friend_id AS friend_id,
-	u."name" AS friend_name, 
-	u.email AS frien_email ,
-	u.login AS friend_login,
-	s."name" AS friendship_status 
-FROM friendship f
-JOIN users u ON f.friend_id = u.user_id 
-JOIN status s ON f.status_id = s.status_id 
-WHERE f.user_id = 1 AND s.name = 'CONFIRMED'
-
-UNION
-
-SELECT 
-	f.friend_id  AS user_id,
-	f.user_id AS friend_id,
-	u."name" AS friend_name, 
-	u.email AS frien_email ,
-	u.login AS friend_login,
-	s."name" AS friendship_status
-FROM friendship f
-JOIN users u ON f.user_id  = u.user_id 
-JOIN status s ON f.status_id = s.status_id 
-WHERE f.friend_id  = 1 AND s.name = 'CONFIRMED'
-```
 - Получение общих друзей двух пользователей.
 ```SQL
-WITH user1_friends AS (
-    SELECT friend_id 
-    FROM friendship f
-    JOIN status s ON f.status_id = s.id
-    WHERE f.user_id = 1 AND s.name = 'CONFIRMED'
-    UNION
-    SELECT user_id as friend_id
-    FROM friendship f
-    JOIN status s ON f.status_id = s.id
-    WHERE f.friend_id = 1 AND s.name = 'CONFIRMED'
-),
-user2_friends AS (
-    SELECT friend_id 
-    FROM friendship f
-    JOIN status s ON f.status_id = s.id
-    WHERE f.user_id = 2 AND s.name = 'CONFIRMED'
-    UNION
-    SELECT user_id as friend_id
-    FROM friendship f
-    JOIN status s ON f.status_id = s.id
-    WHERE f.friend_id = 2 AND s.name = 'CONFIRMED'
-)
-SELECT 
-    u.id AS common_friend_id,
-    u.name AS common_friend_name, 
-    u.email AS common_friend_email,
-    u.login AS common_friend_login
-FROM users u
-JOIN user1_friends f1 ON u.id = f1.friend_id
-JOIN user2_friends f2 ON u.id = f2.friend_id
-WHERE u.id NOT IN (1, 2);
+SELECT u.* 
+FROM friendship f1
+JOIN friendship f2 ON f1.friend_id = f2.friend_id
+JOIN users u ON f1.friend_id = u.user_id
+WHERE f1.user_id = ? 
+  AND f2.user_id = ?
+  AND f1.status_id = ?
+  AND f2.status_id = ?
 ```
 - Получить 10 самых популярных фильмов:
 ```SQL
