@@ -32,6 +32,7 @@ public class FilmDBRepository extends BaseRepository<Film> implements FilmStorag
     @Override
     public Film create(Film film) {
 
+
         int id = insert(
                 INSERT_QUERY,
                 film.getName(),

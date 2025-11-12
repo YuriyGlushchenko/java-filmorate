@@ -11,7 +11,7 @@ import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
-
+// @formatter:off
 @Data
 @Builder(toBuilder = true)
 public class Film {

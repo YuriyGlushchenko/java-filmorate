@@ -11,10 +11,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import ru.yandex.practicum.filmorate.exceptions.exceptions.DuplicatedDataException;
-import ru.yandex.practicum.filmorate.exceptions.exceptions.InternalServerException;
-import ru.yandex.practicum.filmorate.exceptions.exceptions.NotFoundException;
-import ru.yandex.practicum.filmorate.exceptions.exceptions.ValidationException;
+import ru.yandex.practicum.filmorate.exceptions.exceptions.*;
 import ru.yandex.practicum.filmorate.exceptions.responses.ErrorMessage;
 import ru.yandex.practicum.filmorate.exceptions.responses.ValidationError;
 import ru.yandex.practicum.filmorate.exceptions.responses.ValidationErrorResponse;
@@ -103,6 +100,13 @@ public class GlobalExceptionHandler {
     public ErrorMessage handleInternalServerException(InternalServerException ex) {
 
         return new ErrorMessage("INTERNAL_SERVER_ERROR", ex.getMessage());
+    }
+
+    @ExceptionHandler(ConditionsNotMetException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorMessage handleConditionsNotMetException(ConditionsNotMetException ex) {
+
+        return new ErrorMessage("UNPROCESSABLE_ENTITY", ex.getMessage());
     }
 
 

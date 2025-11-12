@@ -10,12 +10,17 @@ import ru.yandex.practicum.filmorate.dal.FilmStorage;
 import ru.yandex.practicum.filmorate.dal.GenreStorage;
 import ru.yandex.practicum.filmorate.dal.MpaRatingStorage;
 import ru.yandex.practicum.filmorate.dal.UserStorage;
+import ru.yandex.practicum.filmorate.exceptions.exceptions.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.exceptions.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.MpaRating;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Validated
 @Service
@@ -43,9 +48,29 @@ public class FilmService {
         return filmRepository.findAll();
     }
 
-    public Film create(Film film) {
-        // toDo дописать сохранение жанров в genreRepository методом saveFilmGenres
-        return filmRepository.create(film);
+    public Film create(Film newFilm) {
+        // Приходит film без id, в поле mpa только id
+        MpaRating rating = mpaRatingRepository.getMpaRatingById(newFilm.getMpa().getId())
+                .orElseThrow(() -> new ConditionsNotMetException("Указанный рейтинг не найден"));
+
+        // добавляем полноценный mpa из базы с id и названием
+        newFilm.setMpa(rating);
+
+        // сохраняем фильм в базу, получаем его id
+        Film film = filmRepository.create(newFilm);
+
+        // проверяем жанры фильма на существование в базе
+        validateGenres(newFilm.getGenres());
+
+        // сохраняем все жанры фильма
+        if (newFilm.getGenres() == null) {
+            film.setGenres(new HashSet<>());
+        } else {
+            genreRepository.saveFilmGenres(film.getId(), film.getGenres());
+        }
+
+        // возвращается полноценный film с присвоенным id, полноценным mpa
+        return film;
     }
 
     public Film update(Film newFilm) {
@@ -53,10 +78,10 @@ public class FilmService {
     }
 
     public Film getFilmById(int id) {
-        Film film =  filmRepository.getFilmById(id).orElseThrow(() -> new NotFoundException("Фильм с id = " + id + " не найден"));
+        Film film = filmRepository.getFilmById(id).orElseThrow(() -> new NotFoundException("Фильм с id = " + id + " не найден"));
 
         MpaRating rating = mpaRatingRepository.getMpaRatingById(film.getMpa().getId()).orElseThrow(
-                ()-> new RuntimeException("Категория фильма не найдена")
+                () -> new RuntimeException("Категория фильма не найдена")
         );
 
         Set<Genre> genres = new HashSet<>(genreRepository.getFilmGenresByFilmId(id));
@@ -89,6 +114,22 @@ public class FilmService {
 
         return filmRepository.getFilmById(filmId)
                 .orElseThrow(() -> new NotFoundException("Фильм с id = " + filmId + " не найден"));
+    }
+
+    private void validateGenres(Set<Genre> genres) {
+        if (genres == null || genres.isEmpty()) {
+            return;
+        }
+
+        Set<Integer> existingGenreIds = genreRepository.findAll().stream()
+                .map(Genre::getId)
+                .collect(Collectors.toSet());
+
+        for (Genre genre : genres) {
+            if (!existingGenreIds.contains(genre.getId())) {
+                throw new ConditionsNotMetException("Жанр с id = " + genre.getId() + " не найден");
+            }
+        }
     }
 
 }

@@ -49,10 +49,10 @@ public class FriendshipService {
 
     }
 
-        public void removeFromFriends(int userId, int friendId) {
-            validateUsersExist(userId, friendId);
+    public void removeFromFriends(int userId, int friendId) {
+        validateUsersExist(userId, friendId);
 
-            friendshipRepository.removeFromFriends(userId,friendId);
+        friendshipRepository.removeFromFriends(userId, friendId);
 
 
     }
@@ -80,7 +80,7 @@ public class FriendshipService {
         for (int userId : userIds) {
             Optional<User> userOptional = userRepository.getUserById(userId);
 
-            if(userOptional.isEmpty()){
+            if (userOptional.isEmpty()) {
                 log.debug("Пользователь с id={} не найден", userId);
                 throw new NotFoundException("Данные не обновлены. Пользователь с id=" + userId + " не найден");
             }

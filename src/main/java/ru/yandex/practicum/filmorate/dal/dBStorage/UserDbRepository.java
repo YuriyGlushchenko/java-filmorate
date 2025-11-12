@@ -76,7 +76,7 @@ public class UserDbRepository extends BaseRepository<User> implements UserStorag
 
         Optional<User> userOptional = findOne(FIND_BY_ID_QUERY, user.getId());
 
-        if(userOptional.isEmpty()){
+        if (userOptional.isEmpty()) {
             log.debug("Пользователь с id={} не найден", user.getId());
             throw new NotFoundException("Данные не обновлены. Пользователь с id=" + user.getId() + " не найден");
         }
