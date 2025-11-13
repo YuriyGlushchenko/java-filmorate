@@ -12,9 +12,12 @@ import java.util.List;
 @Repository("FriendshipDbRepository")
 public class FriendshipDbRepository extends BaseRepository<Friendship> implements FriendshipStorage {
     private static final String INSERT_QUERY = "INSERT INTO friendship (user_id, friend_id, status_id) VALUES (?, ?, ?)";
+
     private static final String FIND_USER_FRIENDS = "SELECT f.friend_id As user_id, uf.email, uf.login, uf.name, uf.birthday" +
             " FROM friendship AS f JOIN users AS uf ON f.friend_id = uf.user_id WHERE f.user_id = ? ;";
+
     private static final String DELETE_FRIEND_QUERY = "DELETE FROM friendship WHERE user_id = ? AND friend_id = ?";
+
     private static final String COMMON_FRIENDS_QUERY = "SELECT u.* FROM friendship f1 JOIN friendship f2 ON " +
             "f1.friend_id = f2.friend_id JOIN users u ON f1.friend_id = u.user_id WHERE f1.user_id = ? AND f2.user_id = ?";
 
@@ -53,4 +56,5 @@ public class FriendshipDbRepository extends BaseRepository<Friendship> implement
         // Без учета статуса дружбы
         return jdbc.query(COMMON_FRIENDS_QUERY, userMapper, userA, userB);
     }
+
 }

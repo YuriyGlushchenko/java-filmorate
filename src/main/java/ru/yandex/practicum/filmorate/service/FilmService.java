@@ -17,7 +17,6 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.MpaRating;
 
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -92,27 +91,29 @@ public class FilmService {
         return film;
     }
 
-    public Collection<Film> findMostLikedFilms(
+    public Collection<Film> findMostPopularFilms(
             @Positive(message = "Количество фильмов для отображения должно быть положительным числом") int count) {
 
-        Comparator<Film> likesCountComparator = Comparator.comparingInt((Film f) -> f.getLikesUserIds().size()).reversed();
-
-        return filmRepository.findAll().stream().sorted(likesCountComparator).limit(count).toList();
+        return filmRepository.findMostPopular(count);
     }
 
     public void addLike(int filmId, int userId) {
-        getValidatedLikedFilm(filmId, userId).getLikesUserIds().add(userId);
+        validateLikeFilmData(filmId, userId);
+
+        filmRepository.addLike(filmId, userId);
     }
 
     public void removeLike(int filmId, int userId) {
-        getValidatedLikedFilm(filmId, userId).getLikesUserIds().remove(userId);
+        validateLikeFilmData(filmId, userId);
+
+
     }
 
-    private Film getValidatedLikedFilm(int filmId, int userId) {
+    private void validateLikeFilmData(int filmId, int userId) {
         userRepository.getUserById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id = " + userId + " не найден"));
 
-        return filmRepository.getFilmById(filmId)
+        filmRepository.getFilmById(filmId)
                 .orElseThrow(() -> new NotFoundException("Фильм с id = " + filmId + " не найден"));
     }
 

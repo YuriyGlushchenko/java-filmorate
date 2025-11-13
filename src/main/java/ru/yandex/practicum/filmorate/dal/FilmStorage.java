@@ -13,4 +13,10 @@ public interface FilmStorage {
     Film update(Film newFilm);
 
     Optional<Film> getFilmById(int id);
+
+    void addLike(int filmId, int userId);
+
+    public void removeLike(int filmId, int userId);
+
+    Collection<Film> findMostPopular(int count);
 }

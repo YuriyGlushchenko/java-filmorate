@@ -5,10 +5,7 @@ import ru.yandex.practicum.filmorate.dal.FilmStorage;
 import ru.yandex.practicum.filmorate.exceptions.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 
 @Component
@@ -51,5 +48,22 @@ public class InMemoryFilmStorage implements FilmStorage {
                 .max()
                 .orElse(0);
         return ++currentMaxId;
+    }
+
+    @Override
+    public void addLike(int filmId, int userId) {
+        films.get(filmId).getLikesUserIds().add(userId);
+    }
+
+    @Override
+    public void removeLike(int filmId, int userId) {
+        films.get(filmId).getLikesUserIds().remove(userId);
+    }
+
+    @Override
+    public Collection<Film> findMostPopular(int count) {
+        Comparator<Film> likesCountComparator = Comparator.comparingInt((Film f) -> f.getLikesUserIds().size()).reversed();
+
+        return films.values().stream().sorted(likesCountComparator).limit(count).toList();
     }
 }
