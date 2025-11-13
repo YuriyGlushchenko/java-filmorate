@@ -1,16 +1,16 @@
 -- 1. Заполняем справочные таблицы (БЕЗ указания ID)
-MERGE INTO rating (rating_name) KEY(rating_name) VALUES
+merge into rating (rating_name) KEY(rating_name) VALUES
 ('G'),
 ('PG'),
 ('PG-13'),
 ('R'),
 ('NC-17');
 
-MERGE INTO status (status_name) KEY(status_name) VALUES
+merge into status (status_name) KEY(status_name) VALUES
 ('PENDING'),
 ('CONFIRMED');
 
-MERGE INTO genre (genre_name) KEY(genre_name) VALUES
+merge into genre (genre_name) KEY(genre_name) VALUES
 ('Комедия'),
 ('Драма'),
 ('Мультфильм'),
@@ -19,7 +19,7 @@ MERGE INTO genre (genre_name) KEY(genre_name) VALUES
 ('Боевик');
 
 -- 2. Заполняем таблицу пользователей (БЕЗ указания ID)
-MERGE INTO users (email, login, name, birthday) KEY(email) VALUES
+merge into users (email, login, name, birthday) KEY(email) VALUES
 ('ivan@mail.ru', 'ivan_petrov', 'Иван Петров', '1990-05-15'),
 ('maria@gmail.com', 'maria_s', 'Мария Сидорова', '1985-12-03'),
 ('alex@yandex.ru', 'alex_ivanov', 'Алексей Иванов', '1995-08-20'),
@@ -28,7 +28,7 @@ MERGE INTO users (email, login, name, birthday) KEY(email) VALUES
 ('ekaterina@yandex.ru', 'katya_m', 'Екатерина Морозова', '1993-07-14');
 
 -- 3. Заполняем таблицу фильмов (БЕЗ указания ID)
-MERGE INTO film (film_name, description, release_date, duration, rating_id) KEY(film_name) VALUES
+merge into film (film_name, description, release_date, duration, rating_id) KEY(film_name) VALUES
 ('Матрица', 'Хакер Нео discovers the truth about his reality', '1999-03-31', 136, 1),
 ('Король Лев', 'Молодой лев Симба борется за свое королевство', '1994-06-24', 88, 1),
 ('Начало', 'Воры внедряются в сны, чтобы украсть идеи', '2010-07-16', 148, 3),
@@ -37,7 +37,7 @@ MERGE INTO film (film_name, description, release_date, duration, rating_id) KEY(
 ('Ирония судьбы', 'Двое незнакомцев оказываются в одной квартире в новогоднюю ночь', '1975-12-31', 184, 2);
 
 -- 4. Заполняем связь фильмов и жанров
-MERGE INTO films_genre (film_id, genre_id) KEY(film_id, genre_id) VALUES
+merge into films_genre (film_id, genre_id) KEY(film_id, genre_id) VALUES
 (1, 6), (1, 4),  -- Матрица: Боевик, Триллер
 (2, 3), (2, 2),  -- Король Лев: Мультфильм, Драма
 (3, 6), (3, 4),  -- Начало: Боевик, Триллер
@@ -46,7 +46,7 @@ MERGE INTO films_genre (film_id, genre_id) KEY(film_id, genre_id) VALUES
 (6, 1), (6, 2);  -- Ирония судьбы: Комедия, Драма
 
 -- 5. Заполняем лайки
-MERGE INTO likes (film_id, user_id) KEY(film_id, user_id) VALUES
+merge into likes (film_id, user_id) KEY(film_id, user_id) VALUES
 (1, 1), (1, 2), (1, 3), (1, 4),  -- Матрица понравилась 4 пользователям
 (2, 1), (2, 5), (2, 6),          -- Король Лев понравился 3 пользователям
 (3, 2), (3, 3), (3, 4), (3, 5), (3, 6),  -- Начало понравилось 5 пользователям
@@ -55,7 +55,7 @@ MERGE INTO likes (film_id, user_id) KEY(film_id, user_id) VALUES
 (6, 1), (6, 2), (6, 3), (6, 4), (6, 5), (6, 6);  -- Ирония судьбы понравилась всем
 
 -- 6. Заполняем дружбу (БЕЗ указания ID)
-MERGE INTO friendship (user_id, friend_id, status_id) KEY(user_id, friend_id) VALUES
+merge into friendship (user_id, friend_id, status_id) KEY(user_id, friend_id) VALUES
 (1, 2, 2),  -- Иван и Мария - подтвержденные друзья
 (1, 3, 2),  -- Иван и Алексей - подтвержденные друзья
 (5, 1, 2),  -- Сергей и Иван - подтвержденные друзья

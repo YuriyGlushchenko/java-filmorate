@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
 import jakarta.validation.constraints.Positive;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -23,7 +22,7 @@ import java.util.stream.Collectors;
 
 @Validated
 @Service
-@RequiredArgsConstructor
+//@RequiredArgsConstructor
 public class FilmService {
     private final FilmStorage filmRepository;
     private final UserStorage userRepository;

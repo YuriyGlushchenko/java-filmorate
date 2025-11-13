@@ -18,8 +18,6 @@ import java.util.Optional;
 public class UserDbRepository extends BaseRepository<User> implements UserStorage {
     private static final String FIND_ALL_QUERY = "SELECT * FROM users";
     private static final String FIND_BY_ID_QUERY = "SELECT * FROM users WHERE user_id = ?";
-    private static final String FIND_BY_EMAIL_QUERY = "SELECT * FROM users WHERE email = ?";
-    private static final String FIND_BY_LOGIN_QUERY = "SELECT * FROM users WHERE login = ?";
     private static final String FIND_BY_LOGIN_OR_EMAIL_QUERY = "SELECT * FROM users WHERE login = ? OR email = ?";
     private static final String INSERT_QUERY = "INSERT INTO users(email, login, name, birthday) VALUES (?, ?, ?, ?)";
     private static final String UPDATE_QUERY = "UPDATE users SET email = ?, login = ?, name = ?, birthday = ? WHERE user_id = ?";
@@ -41,16 +39,6 @@ public class UserDbRepository extends BaseRepository<User> implements UserStorag
 
         return userOptional;
     }
-
-//    @Override
-//    public Optional<User> getUserByEmail(String email) {
-//        return findOne(FIND_BY_EMAIL_QUERY, email);
-//    }
-//
-//    @Override
-//    public Optional<User> getUserByLogin(String login) {
-//        return findOne(FIND_BY_LOGIN_QUERY, login);
-//    }
 
     @Override
     public Optional<User> findDuplicateDataUser(String email, String login) {
