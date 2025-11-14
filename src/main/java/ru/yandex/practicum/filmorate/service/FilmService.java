@@ -72,6 +72,9 @@ public class FilmService {
     }
 
     public Film update(Film newFilm) {
+        filmRepository.getFilmById(newFilm.getId())
+                .orElseThrow(() -> new NotFoundException("Данные не обновлены. Фильм с id=" + newFilm.getId() + " не найден"));
+
         return filmRepository.update(newFilm);
     }
 

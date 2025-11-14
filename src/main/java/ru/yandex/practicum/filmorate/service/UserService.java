@@ -45,13 +45,10 @@ public class UserService {
             User existUser = alreadyExistUser.get();
 
             if (existUser.getLogin().equals(user.getLogin()) && existUser.getEmail().equals(user.getEmail())) {
-                log.trace("Пользователь с Login: {} и Email: {} уже существует", user.getLogin(), user.getEmail());
                 throw new DuplicatedDataException("Пользователь с таким Login и Email уже зарегистрирован");
             } else if (existUser.getLogin().equals(user.getLogin())) {
-                log.trace("Пользователь с Login: {}", user.getLogin());
                 throw new DuplicatedDataException("Пользователь с таким Login уже зарегистрирован");
             }
-            log.trace("Пользователь с Email: {} уже существует", user.getEmail());
             throw new DuplicatedDataException("Пользователь с таким Email уже зарегистрирован");
         }
 

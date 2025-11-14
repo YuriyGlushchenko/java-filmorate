@@ -20,22 +20,6 @@ public class InMemoryUserStorage implements UserStorage {
         return users.values();
     }
 
-//    @Override
-//    public Optional<User> getUserByEmail(String email) {
-//        return users.values()
-//                .stream()
-//                .filter(u -> u.getEmail().equals(email))
-//                .findFirst();
-//    }
-
-//    @Override
-//    public Optional<User> getUserByLogin(String login) {
-//        return users.values()
-//                .stream()
-//                .filter(u -> u.getLogin().equals(login))
-//                .findFirst();
-//    }
-
     @Override
     public Optional<User> findDuplicateDataUser(String email, String login) {
         return users.values()
