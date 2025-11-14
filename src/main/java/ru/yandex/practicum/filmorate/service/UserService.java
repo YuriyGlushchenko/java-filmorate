@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dal.FriendshipStorage;
 import ru.yandex.practicum.filmorate.dal.UserStorage;
 import ru.yandex.practicum.filmorate.dto.UserDTO;
 import ru.yandex.practicum.filmorate.exceptions.exceptions.DuplicatedDataException;
@@ -12,6 +13,7 @@ import ru.yandex.practicum.filmorate.mapper.UserMapper;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -19,12 +21,15 @@ import java.util.stream.Collectors;
 @Service
 public class UserService {
     private final UserStorage userRepository;
+    private final FriendshipStorage friendshipRepository;
 
     // Вместо @Qualifier и хардкода выбираем конкретную реализацию бинов в файле настроек. Используется SpEL.
     // *{} - Spring Expression Language, внутри @имя_бина, ${} - значение из application.yml.
     @Autowired
-    public UserService(@Value("#{@${filmorate-app.storage.user-repository}}") UserStorage userRepository) {
+    public UserService(@Value("#{@${filmorate-app.storage.user-repository}}") UserStorage userRepository,
+                       FriendshipStorage friendshipRepository) {
         this.userRepository = userRepository;
+        this.friendshipRepository = friendshipRepository;
     }
 
     public Collection<UserDTO> getAllUsers() {
@@ -54,11 +59,13 @@ public class UserService {
     }
 
     public User update(User user) {
+        userRepository.getUserById(user.getId())
+                .orElseThrow(() -> new NotFoundException("Данные не обновлены. Пользователь с id=" + user.getId() + " не найден"));
+
         Optional<User> alreadyExistUser = userRepository.findDuplicateDataUser(user.getEmail(), user.getLogin());
 
         if (alreadyExistUser.isPresent()) {
             if (alreadyExistUser.get().getId() != user.getId()) {
-                log.trace("Login: {} или Email: {} уже используются", user.getLogin(), user.getEmail());
                 throw new DuplicatedDataException("Такой Login или Email уже используется");
             }
         }
@@ -67,11 +74,17 @@ public class UserService {
     }
 
     public User getUserById(int id) {
-        return userRepository.getUserById(id)
-                .orElseThrow(() -> {
-                    log.debug("Пользователь с id={} не найден", id);
-                    return new NotFoundException("Пользователь с id = " + id + " не найден");
-                });
+        User user = userRepository.getUserById(id)
+                .orElseThrow(() -> new NotFoundException("Пользователь с id = " + id + " не найден"));
+
+        List<Integer> friendsIds = friendshipRepository.getUserFriends(id).stream()
+                .map(User::getId)
+                .toList();
+
+        user.getFriends().clear();
+        user.getFriends().addAll(friendsIds);
+
+        return user;
     }
 
 }
