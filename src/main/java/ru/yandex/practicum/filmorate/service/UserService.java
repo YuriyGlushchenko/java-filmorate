@@ -52,22 +52,31 @@ public class UserService {
             throw new DuplicatedDataException("Пользователь с таким Email уже зарегистрирован");
         }
 
+        if (user.getName() == null || user.getName().isBlank()) {
+            log.trace("Пользователю с именем ->|{}|<- присвоено имя {}", user.getName(), user.getLogin());
+            user.setName(user.getLogin());
+        }
+
         return userRepository.create(user);
     }
 
-    public User update(User user) {
-        userRepository.getUserById(user.getId())
-                .orElseThrow(() -> new NotFoundException("Данные не обновлены. Пользователь с id=" + user.getId() + " не найден"));
+    public User update(User updateUser) {
+        User user = userRepository.getUserById(updateUser.getId())
+                .orElseThrow(() -> new NotFoundException("Данные не обновлены. Пользователь с id=" + updateUser.getId() + " не найден"));
 
-        Optional<User> alreadyExistUser = userRepository.findDuplicateDataUser(user.getEmail(), user.getLogin());
+        Optional<User> alreadyExistUser = userRepository.findDuplicateDataUser(updateUser.getEmail(), updateUser.getLogin());
 
         if (alreadyExistUser.isPresent()) {
-            if (alreadyExistUser.get().getId() != user.getId()) {
+            if (alreadyExistUser.get().getId() != updateUser.getId()) {
                 throw new DuplicatedDataException("Такой Login или Email уже используется");
             }
         }
+        if (updateUser.getName() == null || updateUser.getName().isBlank()) {
+            log.trace("Имя пользователя не обновлено: |{}|", user.getName());
+            updateUser.setName(user.getName());
+        }
 
-        return userRepository.update(user);
+        return userRepository.update(updateUser);
     }
 
     public User getUserById(int id) {
