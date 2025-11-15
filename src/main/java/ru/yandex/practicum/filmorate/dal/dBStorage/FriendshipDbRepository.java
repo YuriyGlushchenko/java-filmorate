@@ -42,7 +42,6 @@ public class FriendshipDbRepository extends BaseRepository<Friendship> implement
 
     @Override
     public List<User> getUserFriends(int userId) {
-        // Без учета статуса дружбы, что странно. Если с учетом статуса, то тесты (которые приложены к ТЗ) не проходят.
         return jdbc.query(FIND_USER_FRIENDS, userMapper, userId);
     }
 

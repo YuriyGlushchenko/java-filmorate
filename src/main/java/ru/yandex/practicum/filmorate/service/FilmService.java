@@ -22,7 +22,6 @@ import java.util.stream.Collectors;
 
 @Validated
 @Service
-//@RequiredArgsConstructor
 public class FilmService {
     private final FilmStorage filmRepository;
     private final UserStorage userRepository;
@@ -44,6 +43,8 @@ public class FilmService {
 
     public Collection<Film> findAll() {
         return filmRepository.findAll();
+
+        // toDo добавить жанры
     }
 
     public Film create(Film newFilm) {
@@ -75,19 +76,24 @@ public class FilmService {
         filmRepository.getFilmById(newFilm.getId())
                 .orElseThrow(() -> new NotFoundException("Данные не обновлены. Фильм с id=" + newFilm.getId() + " не найден"));
 
+        // проверяем жанры фильма на существование в базе
+        validateGenres(newFilm.getGenres());
+
+        // сохраняем все жанры фильма
+        if (newFilm.getGenres() == null) {
+            newFilm.setGenres(new HashSet<>());
+        } else {
+            genreRepository.saveFilmGenres(newFilm.getId(), newFilm.getGenres());
+        }
+
         return filmRepository.update(newFilm);
     }
 
     public Film getFilmById(int id) {
         Film film = filmRepository.getFilmById(id).orElseThrow(() -> new NotFoundException("Фильм с id = " + id + " не найден"));
 
-        MpaRating rating = mpaRatingRepository.getMpaRatingById(film.getMpa().getId()).orElseThrow(
-                () -> new RuntimeException("Категория фильма не найдена")
-        );
-
         Set<Genre> genres = new HashSet<>(genreRepository.getFilmGenresByFilmId(id));
 
-        film.setMpa(rating);
         film.setGenres(genres);
 
         return film;
@@ -108,7 +114,7 @@ public class FilmService {
     public void removeLike(int filmId, int userId) {
         validateLikeFilmData(filmId, userId);
 
-
+        filmRepository.removeLike(filmId, userId);
     }
 
     private void validateLikeFilmData(int filmId, int userId) {
