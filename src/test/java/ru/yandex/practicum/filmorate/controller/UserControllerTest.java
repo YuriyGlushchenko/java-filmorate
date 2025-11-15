@@ -4,10 +4,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
@@ -19,6 +21,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest  // загружает полный контекст приложения Spring, имитируя запуск реального приложения.
 @AutoConfigureMockMvc  // настраивает и создает экземпляр MockMvc для тестирования.
+@AutoConfigureTestDatabase
+@Transactional
 class UserControllerTest {
 
     @Autowired  // внедряется созданный и настроенный экземпляр MockMvc
@@ -152,8 +156,8 @@ class UserControllerTest {
         String userJson = """
                 {
                 
-                    "email": "test@example.com",
-                    "login": "testlogin",
+                    "email": "test@example.com11",
+                    "login": "testlogin11",
                     "birthday": "1990-01-01"
                 }
                 """;
@@ -163,7 +167,7 @@ class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(userJson))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("testlogin"));
+                .andExpect(jsonPath("$.name").value("testlogin11"));
     }
 
     @Test
@@ -243,8 +247,8 @@ class UserControllerTest {
         // CHECKSTYLE:OFF
         String createUserJson = """
                 {
-                    "email": "test@example.com",
-                    "login": "testlogin",
+                    "email": "test@example.com3",
+                    "login": "testlogin3",
                     "name": "Test Name",
                     "birthday": "1990-01-01"
                 }
@@ -270,7 +274,7 @@ class UserControllerTest {
                 {
                     "id": %d,
                     "email": "updated@example.com",
-                    "login": "newlogin",
+                    "login": "newUpdatedlogin",
                     "name": null,
                     "birthday": "1995-05-15"
                 }
@@ -284,8 +288,8 @@ class UserControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(userId))
                 .andExpect(jsonPath("$.email").value("updated@example.com"))
-                .andExpect(jsonPath("$.login").value("newlogin"))
-                .andExpect(jsonPath("$.name").value("newlogin")) // имя должно быть равно логину
+                .andExpect(jsonPath("$.login").value("newUpdatedlogin"))
+                .andExpect(jsonPath("$.name").value(createdUser.getName()))
                 .andExpect(jsonPath("$.birthday").value("1995-05-15"));
     }
 

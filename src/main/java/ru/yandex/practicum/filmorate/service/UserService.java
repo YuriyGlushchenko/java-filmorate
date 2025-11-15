@@ -1,86 +1,105 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dal.FriendshipStorage;
+import ru.yandex.practicum.filmorate.dal.UserStorage;
+import ru.yandex.practicum.filmorate.dto.UserDTO;
+import ru.yandex.practicum.filmorate.exceptions.exceptions.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exceptions.exceptions.NotFoundException;
+import ru.yandex.practicum.filmorate.mapper.UserMapper;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
-@RequiredArgsConstructor
 public class UserService {
-    private final UserStorage userStorage;
+    private final UserStorage userRepository;
+    private final FriendshipStorage friendshipRepository;
+    private final FriendshipService friendshipService;
 
-    public Collection<User> findAll() {
-        return userStorage.getAllUsers();
+    // Вместо @Qualifier и хардкода выбираем конкретную реализацию бинов в файле настроек. Используется SpEL.
+    // *{} - Spring Expression Language, внутри @имя_бина, ${} - значение из application.yml.
+    @Autowired
+    public UserService(@Value("#{@${filmorate-app.storage.user-repository}}") UserStorage userRepository,
+                       FriendshipStorage friendshipRepository,
+                       FriendshipService friendshipService) {
+        this.userRepository = userRepository;
+        this.friendshipRepository = friendshipRepository;
+        this.friendshipService = friendshipService;
+    }
+
+    public Collection<UserDTO> getAllUsers() {
+        return userRepository.getAllUsers().stream()
+                .map(UserMapper::mapToUserDto)
+                .collect(Collectors.toList());
     }
 
     public User create(User user) {
-        return userStorage.create(user);
+        Optional<User> alreadyExistUser = userRepository.findDuplicateDataUser(user.getEmail(), user.getLogin());
+
+        if (alreadyExistUser.isPresent()) {
+            User existUser = alreadyExistUser.get();
+
+            if (existUser.getLogin().equals(user.getLogin()) && existUser.getEmail().equals(user.getEmail())) {
+                throw new DuplicatedDataException("Пользователь с таким Login и Email уже зарегистрирован");
+            } else if (existUser.getLogin().equals(user.getLogin())) {
+                throw new DuplicatedDataException("Пользователь с таким Login уже зарегистрирован");
+            }
+            throw new DuplicatedDataException("Пользователь с таким Email уже зарегистрирован");
+        }
+
+        if (user.getName() == null || user.getName().isBlank()) {
+            log.trace("Пользователю с именем ->|{}|<- присвоено имя {}", user.getName(), user.getLogin());
+            user.setName(user.getLogin());
+        }
+
+        return userRepository.create(user);
     }
 
-    public User update(User newUser) {
-        return userStorage.update(newUser);
+    public User update(User updateUser) {
+        User user = userRepository.getUserById(updateUser.getId())
+                .orElseThrow(() -> new NotFoundException("Данные не обновлены. Пользователь с id=" + updateUser.getId() + " не найден"));
+
+        Optional<User> alreadyExistUser = userRepository.findDuplicateDataUser(updateUser.getEmail(), updateUser.getLogin());
+
+        if (alreadyExistUser.isPresent()) {
+            if (alreadyExistUser.get().getId() != updateUser.getId()) {
+                throw new DuplicatedDataException("Такой Login или Email уже используется");
+            }
+        }
+        if (updateUser.getName() == null || updateUser.getName().isBlank()) {
+            log.trace("Имя пользователя не обновлено: |{}|", user.getName());
+            updateUser.setName(user.getName());
+        }
+
+        return userRepository.update(updateUser);
     }
 
     public User getUserById(int id) {
-        return userStorage.getUserById(id)
+        return userRepository.getUserById(id)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id = " + id + " не найден"));
     }
 
-
     public void addToFriends(int userId, int friendId) {
-        correctUserPair(userId, friendId)
-                .forEach(user -> user.getFriends().add(userId == user.getId() ? friendId : userId));
+        friendshipService.addToFriends(userId, friendId);
     }
 
     public void removeFromFriends(int userId, int friendId) {
-        correctUserPair(userId, friendId)
-                .forEach(user -> user.getFriends().remove(userId == user.getId() ? friendId : userId));
+        friendshipService.removeFromFriends(userId, friendId);
     }
 
-    public List<User> getUserFriends(int userId) {
-        User user = userStorage.getUserById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id = " + userId + "не найден"));
-
-        return user
-                .getFriends()
-                .stream()
-                .map(id -> userStorage.getUserById(id).get())
-                .collect(Collectors.toList());
+    public Collection<UserDTO> getUserFriends(int userId) {
+        return friendshipService.getUserFriends(userId);
     }
 
-    public List<User> getMutualFriends(int userA, int userB) {
-        List<User> userPair = correctUserPair(userA, userB);
-
-        return userPair
-                .getFirst()
-                .getFriends()
-                .stream()
-                .filter(id -> userPair.getLast().getFriends().contains(id))
-                .map(id -> userStorage
-                        .getUserById(id)
-                        .orElseThrow(() -> new NotFoundException("В списке друзей несуществующий пользователь с id = " + id)))
-                .collect(Collectors.toList());
-    }
-
-    private List<User> correctUserPair(int firstUserId, int secondUserId) {
-        Optional<User> optionalFirstUser = userStorage.getUserById(firstUserId);
-        Optional<User> optionalSecondUser = userStorage.getUserById(secondUserId);
-
-        if (optionalFirstUser.isEmpty()) {
-            throw new NotFoundException("Пользователь с id = " + firstUserId + "не найден");
-        }
-        if (optionalSecondUser.isEmpty()) {
-            throw new NotFoundException("Пользователь с id = " + secondUserId + "не найден");
-        }
-
-        return List.of(optionalFirstUser.get(), optionalSecondUser.get());
+    public Collection<User> findCommonFriends(int id, int otherId) {
+        return friendshipService.findCommonFriends(id, otherId);
     }
 
 }

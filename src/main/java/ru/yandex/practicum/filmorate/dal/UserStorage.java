@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.storage;
+package ru.yandex.practicum.filmorate.dal;
 
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -13,5 +13,11 @@ public interface UserStorage {
     User update(User newUser);
 
     Optional<User> getUserById(int id);
+
+//    Optional<User> getUserByEmail(String email);
+//
+//    Optional<User> getUserByLogin(String email);
+
+    Optional<User> findDuplicateDataUser(String email, String login);
 
 }

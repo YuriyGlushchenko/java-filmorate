@@ -50,8 +50,8 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public Collection<Film> findMostLikedFilms(@RequestParam(defaultValue = "10") int count) {
+    public Collection<Film> findMostPopularFilms(@RequestParam(defaultValue = "10") int count) {
 
-        return filmService.findMostLikedFilms(count);
+        return filmService.findMostPopularFilms(count);
     }
 }
