@@ -6,10 +6,7 @@ import ru.yandex.practicum.filmorate.dal.UserStorage;
 import ru.yandex.practicum.filmorate.exceptions.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 @Component("InMemoryUserStorage")
@@ -69,5 +66,13 @@ public class InMemoryUserStorage implements UserStorage {
                 .max()
                 .orElse(0);
         return ++currentMaxId;
+    }
+
+    @Override
+    public List<Integer> checkUserIds(int[] userIds) {
+        return Arrays.stream(userIds)
+                .filter(users::containsKey)
+                .boxed()
+                .toList();
     }
 }

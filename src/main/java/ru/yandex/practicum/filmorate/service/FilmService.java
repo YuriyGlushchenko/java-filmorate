@@ -43,8 +43,6 @@ public class FilmService {
 
     public Collection<Film> findAll() {
         return filmRepository.findAll();
-
-        // toDo добавить жанры
     }
 
     public Film create(Film newFilm) {

@@ -16,7 +16,6 @@ import ru.yandex.practicum.filmorate.model.FriendshipStatus;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @Slf4j
@@ -76,13 +75,14 @@ public class FriendshipService {
             throw new InternalServerException("Список ID пользователей не может быть пустым");
         }
 
+        List<Integer> correctIds = userRepository.checkUserIds(userIds);
         for (int userId : userIds) {
-            Optional<User> userOptional = userRepository.getUserById(userId);
 
-            if (userOptional.isEmpty()) {
-                log.debug("Пользователь с id={} не найден", userId);
+            if (!correctIds.contains(userId)) {
                 throw new NotFoundException("Данные не обновлены. Пользователь с id=" + userId + " не найден");
             }
         }
+
+
     }
 }

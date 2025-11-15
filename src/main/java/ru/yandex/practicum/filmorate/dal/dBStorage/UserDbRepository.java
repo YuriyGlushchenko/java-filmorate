@@ -7,8 +7,7 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dal.UserStorage;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.util.Collection;
-import java.util.Optional;
+import java.util.*;
 
 @Repository("UserDbRepository")
 @Slf4j
@@ -72,5 +71,17 @@ public class UserDbRepository extends BaseRepository<User> implements UserStorag
         );
         return user;
     }
+
+    public List<Integer> checkUserIds(int[] userIds) {
+        // получаем строку вида "?", "?", "?" с количеством плейсхолдеров "?" равным длине массива userIds
+        String placeholders = String.join(",", Collections.nCopies(userIds.length, "?"));
+
+        // вставляем нужное количество "?" в запрос
+        String query = "SELECT user_id FROM users WHERE user_id IN (" + placeholders + ")";
+
+        // выполняем запрос, подставляя вместо "?" значения из массива userIds (который предварительно запаковали в Integer)
+        return jdbc.queryForList(query, Integer.class, Arrays.stream(userIds).boxed().toArray());
+    }
+
 
 }
