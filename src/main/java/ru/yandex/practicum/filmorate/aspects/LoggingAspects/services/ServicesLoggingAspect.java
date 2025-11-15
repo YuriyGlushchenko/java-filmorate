@@ -32,7 +32,7 @@ public class ServicesLoggingAspect {
         Object[] args = joinPoint.getArgs();
 
         log.info("Вызов метода {} -> {} ", simpleClassName, methodName);
-        log.debug("Класс: {}, args: {}", fullClassName, java.util.Arrays.toString(args));
+        log.debug("args: {}, класс: {}", java.util.Arrays.toString(args), fullClassName);
     }
 
     @AfterReturning(pointcut = "allServicesMethods()", returning = "result")

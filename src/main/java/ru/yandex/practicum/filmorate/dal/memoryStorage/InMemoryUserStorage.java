@@ -1,17 +1,15 @@
-package ru.yandex.practicum.filmorate.storage;
+package ru.yandex.practicum.filmorate.dal.memoryStorage;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.dal.UserStorage;
 import ru.yandex.practicum.filmorate.exceptions.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
-@Component
+@Component("InMemoryUserStorage")
 public class InMemoryUserStorage implements UserStorage {
     private final Map<Integer, User> users = new HashMap<>();
 
@@ -19,12 +17,16 @@ public class InMemoryUserStorage implements UserStorage {
         return users.values();
     }
 
+    @Override
+    public Optional<User> findDuplicateDataUser(String email, String login) {
+        return users.values()
+                .stream()
+                .filter(u -> u.getLogin().equals(login) || u.getEmail().equals(email))
+                .findFirst();
+    }
+
     public User create(User user) {
         user.setId(getNextId());
-        if (user.getName() == null || user.getName().isBlank()) {
-            log.trace("Пользователю с именем ->|{}|<- присвоено имя {}", user.getName(), user.getLogin());
-            user.setName(user.getLogin());
-        }
 
         users.put(user.getId(), user);
 
@@ -64,5 +66,13 @@ public class InMemoryUserStorage implements UserStorage {
                 .max()
                 .orElse(0);
         return ++currentMaxId;
+    }
+
+    @Override
+    public List<Integer> checkUserIds(int[] userIds) {
+        return Arrays.stream(userIds)
+                .filter(users::containsKey)
+                .boxed()
+                .toList();
     }
 }

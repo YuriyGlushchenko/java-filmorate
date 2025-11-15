@@ -1,5 +1,7 @@
 package ru.yandex.practicum.filmorate.aspects.LoggingAspects.exceptions;
 
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
@@ -7,13 +9,10 @@ import org.aspectj.lang.annotation.Pointcut;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exceptions.exceptions.NotFoundException;
-import ru.yandex.practicum.filmorate.exceptions.exceptions.ValidationException;
-
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.ConstraintViolationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import ru.yandex.practicum.filmorate.exceptions.exceptions.NotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.exceptions.ValidationException;
 
 import java.util.List;
 import java.util.Set;
@@ -26,7 +25,8 @@ public class ExceptionsLoggingAspect {
     private static final Logger logger = LoggerFactory.getLogger(ExceptionsLoggingAspect.class);
 
     @Pointcut("execution(* ru.yandex.practicum.filmorate.exceptions.GlobalExceptionHandler.*(..))")
-    public void exceptionHandlerMethods() {}
+    public void exceptionHandlerMethods() {
+    }
 
     // Единый метод для логирования всех обработчиков исключений
     @Before("exceptionHandlerMethods()")
@@ -35,8 +35,7 @@ public class ExceptionsLoggingAspect {
 
         // Получаем перехваченное исключение (первый аргумент метода)
         Object[] args = joinPoint.getArgs();
-        if (args.length > 0 && args[0] instanceof Exception) {
-            Exception exception = (Exception) args[0];
+        if (args.length > 0 && args[0] instanceof Exception exception) {
 
             // Формируем общее сообщение логирования
             String logMessage = buildLogMessage(handlerMethodName, exception);

@@ -11,7 +11,6 @@ import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
-
 @Data
 @Builder(toBuilder = true)
 public class Film {
@@ -35,5 +34,11 @@ public class Film {
     private int duration;
 
     @JsonIgnore  // Будет нельзя накручивать лайки просто указав их в передаваемом json
-    private final Set<Integer> likes = new HashSet<>();
+    private final Set<Integer> likesUserIds = new HashSet<>();
+
+    private MpaRating mpa;
+
+    @Builder.Default
+    private Set<Genre> genres = new HashSet<>();
+
 }
