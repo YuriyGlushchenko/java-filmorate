@@ -17,7 +17,7 @@ public class FilmDBRepository extends BaseRepository<Film> implements FilmStorag
     private final FilmWithGenresExtractor filmWithGenresExtractor;
 
     private static final String FIND_ALL_WITH_GENRES_QUERY = """
-            SELECT 
+            SELECT
                 f.film_id, f.film_name, f.description, f.release_date, f.duration,
                 r.rating_id, r.rating_name, g.genre_id, g.genre_name
             FROM film f
@@ -26,8 +26,6 @@ public class FilmDBRepository extends BaseRepository<Film> implements FilmStorag
             LEFT JOIN genre g ON g.genre_id = fg.genre_id
             ORDER BY f.film_id, g.genre_id
             """;
-
-    private static final String FIND_ALL_QUERY = "SELECT * FROM film f JOIN rating r ON r.rating_id = f.rating_id";
 
     private static final String INSERT_QUERY = "INSERT INTO film(film_name, description, release_date, duration, " +
             "rating_id) VALUES (?, ?, ?, ?, ?)";
@@ -43,12 +41,12 @@ public class FilmDBRepository extends BaseRepository<Film> implements FilmStorag
     private static final String REMOVE_LIKE_QUERY = "DELETE FROM likes WHERE film_id = ? AND user_id = ?;";
 
     private static final String POPULAR_WITH_GENRES_QUERY = """
-            SELECT 
+            SELECT
                 f.film_id, f.film_name, f.description, f.release_date, f.duration,
                 r.rating_id, r.rating_name, g.genre_id, g.genre_name,
                 film_likes.likes_count
             FROM (
-                SELECT 
+                SELECT
                     l.film_id,
                     COUNT(l.user_id) AS likes_count
                 FROM likes l
@@ -71,7 +69,6 @@ public class FilmDBRepository extends BaseRepository<Film> implements FilmStorag
     @Override
     public Collection<Film> findAll() {
         return jdbc.query(FIND_ALL_WITH_GENRES_QUERY, filmWithGenresExtractor);
-//        return findMany(FIND_ALL_QUERY);
     }
 
     @Override

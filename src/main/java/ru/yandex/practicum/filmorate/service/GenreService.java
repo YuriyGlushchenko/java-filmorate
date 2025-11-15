@@ -24,29 +24,4 @@ public class GenreService {
     public Genre getFilmById(int id) {
         return genreStorage.getGenreById(id).orElseThrow(() -> new NotFoundException("Жанр с id = " + id + " не найден"));
     }
-//
-//    public Collection<Film> findMostLikedFilms(
-//            @Positive(message = "Количество фильмов для отображения должно быть положительным числом") int count) {
-//
-//        Comparator<Film> likesCountComparator = Comparator.comparingInt((Film f) -> f.getLikesUserIds().size()).reversed();
-//
-//        return filmRepository.findAll().stream().sorted(likesCountComparator).limit(count).toList();
-//    }
-//
-//    public void addLike(int filmId, int userId) {
-//        getValidatedLikedFilm(filmId, userId).getLikesUserIds().add(userId);
-//    }
-//
-//    public void removeLike(int filmId, int userId) {
-//        getValidatedLikedFilm(filmId, userId).getLikesUserIds().remove(userId);
-//    }
-//
-//    private Film getValidatedLikedFilm(int filmId, int userId) {
-//        userRepository.getUserById(userId)
-//                .orElseThrow(() -> new NotFoundException("Пользователь с id = " + userId + " не найден"));
-//
-//        return filmRepository.getFilmById(filmId)
-//                .orElseThrow(() -> new NotFoundException("Фильм с id = " + filmId + " не найден"));
-//    }
-
 }
