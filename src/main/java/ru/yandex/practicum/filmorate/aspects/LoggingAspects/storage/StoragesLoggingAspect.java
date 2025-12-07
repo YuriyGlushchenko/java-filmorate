@@ -13,12 +13,12 @@ import org.springframework.stereotype.Component;
 @Order(40)
 public class StoragesLoggingAspect {
 
-    // Pointcut для всех методов в пакете storage
-    @Pointcut("execution(* ru.yandex.practicum.filmorate.storage.*.*(..))")
-    public void allStorageMethods() {
+    // Pointcut для всех методов в репозиториях
+    @Pointcut("execution(* ru.yandex.practicum.filmorate.dal..*Repository.*(..))")
+    public void allRepositoryMethods() {
     }
 
-    @Before("allStorageMethods()")
+    @Before("allRepositoryMethods()")
     public void logBeforeMethod(JoinPoint joinPoint) {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
 
@@ -32,10 +32,10 @@ public class StoragesLoggingAspect {
         Object[] args = joinPoint.getArgs();
 
         log.info("Вызов метода {} -> {} ", simpleClassName, methodName);
-        log.debug("Класс: {}, args: {}", fullClassName, java.util.Arrays.toString(args));
+        log.debug("args: {}, класс: {}", java.util.Arrays.toString(args), fullClassName);
     }
 
-    @AfterReturning(pointcut = "allStorageMethods()", returning = "result")
+    @AfterReturning(pointcut = "allRepositoryMethods()", returning = "result")
     public void logAfterReturning(JoinPoint joinPoint, Object result) {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
 
@@ -47,7 +47,7 @@ public class StoragesLoggingAspect {
         log.debug("Метод {} -> {} успешно завершен. Возвращаемое значение: {}", simpleClassName, methodName, result);
     }
 
-    @AfterThrowing(pointcut = "allStorageMethods()", throwing = "ex")
+    @AfterThrowing(pointcut = "allRepositoryMethods()", throwing = "ex")
     public void logAfterThrowing(JoinPoint joinPoint, Exception ex) {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
 
