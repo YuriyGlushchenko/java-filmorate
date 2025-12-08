@@ -44,7 +44,7 @@ public class ServicesLoggingAspect {
 
         String methodName = signature.getName();
 
-        log.debug("Метод {} -> {} успешно завершен. Возвращаемое значение: {}", simpleClassName, methodName, result);
+        log.debug("Успешное завершение  {} -> {}. Возвращаемое значение: {}", simpleClassName, methodName, result);
     }
 
     @AfterThrowing(pointcut = "allServicesMethods()", throwing = "ex")
