@@ -7,8 +7,6 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dal.DirectorStorage;
 import ru.yandex.practicum.filmorate.model.Director;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -108,11 +106,11 @@ public class DirectorDBRepository extends BaseRepository<Director> implements Di
 
         // Составляем SQL-запрос
         String query = String.format(
-            "SELECT fd.film_id, d.director_id, d.director_name " +
-            "FROM director d " +
-            "JOIN films_directors fd ON d.director_id = fd.director_id " +
-            "WHERE fd.film_id IN (%s)",
-            inClause
+                "SELECT fd.film_id, d.director_id, d.director_name " +
+                        "FROM director d " +
+                        "JOIN films_directors fd ON d.director_id = fd.director_id " +
+                        "WHERE fd.film_id IN (%s)",
+                inClause
         );
 
         // Выполняем запрос и собираем результаты

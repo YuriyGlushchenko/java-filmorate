@@ -8,12 +8,12 @@ import org.springframework.validation.annotation.Validated;
 import ru.yandex.practicum.filmorate.dal.*;
 import ru.yandex.practicum.filmorate.exceptions.exceptions.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.exceptions.exceptions.NotFoundException;
-import ru.yandex.practicum.filmorate.model.Director;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.MpaRating;
+import ru.yandex.practicum.filmorate.model.*;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Validated
@@ -43,7 +43,10 @@ public class FilmService {
     public Collection<Film> findAll() {
         Collection<Film> films = filmRepository.findAll();
 
-        // Для каждого фильма загружаем режиссеров
+        // Подгружаем жанры для всех фильмов
+        loadGenresForFilms(films);
+
+        // Подгружаем режиссёров для всех фильмов
         loadDirectorsForFilms(films);
         return films;
     }
@@ -65,22 +68,19 @@ public class FilmService {
         // сохраняем фильм в базу, получаем его id
         Film film = filmRepository.create(newFilm);
 
-        // сохраняем все жанры фильма
+        // сохраняем все связи жанров с фильмом
         if (newFilm.getGenres() == null) {
             film.setGenres(new HashSet<>());
         } else {
             genreRepository.saveFilmGenres(film.getId(), film.getGenres());
         }
 
-        // сохраняем всех режиссеров фильма
+        // сохраняем все связи режиссеров с фильмом
         if (newFilm.getDirectors() == null) {
             film.setDirectors(new HashSet<>());
         } else {
             directorRepository.saveFilmDirectors(film.getId(), film.getDirectors());
         }
-
-        // загружаем полные данные режиссеров
-        film.setDirectors(directorRepository.getFilmDirectorsByFilmId(film.getId()));
 
         return film;
     }
@@ -95,26 +95,21 @@ public class FilmService {
         // проверяем режиссеров фильма на существование в базе
         validateDirectors(newFilm.getDirectors());
 
-        // сохраняем все жанры фильма
+        // сохраняем все связи жанров с фильмом
         if (newFilm.getGenres() == null) {
             newFilm.setGenres(new HashSet<>());
         } else {
             genreRepository.saveFilmGenres(newFilm.getId(), newFilm.getGenres());
         }
 
-        // сохраняем всех режиссеров фильма
+        // сохраняем все связи режиссеров с фильмом
         if (newFilm.getDirectors() == null) {
             newFilm.setDirectors(new HashSet<>());
         } else {
             directorRepository.saveFilmDirectors(newFilm.getId(), newFilm.getDirectors());
         }
 
-        Film updatedFilm = filmRepository.update(newFilm);
-
-        // загружаем полные данные режиссеров для обновленного фильма
-        updatedFilm.setDirectors(directorRepository.getFilmDirectorsByFilmId(updatedFilm.getId()));
-
-        return updatedFilm;
+        return filmRepository.update(newFilm);
     }
 
     public Film getFilmById(int id) {
@@ -135,7 +130,8 @@ public class FilmService {
             @Positive(message = "Количество фильмов для отображения должно быть положительным числом") int count) {
 
         Collection<Film> films = filmRepository.findMostPopular(count);
-        // Загружаем режиссеров для популярных фильмов
+        // Загружаем жанры и режиссеров для популярных фильмов
+        loadGenresForFilms(films);
         loadDirectorsForFilms(films);
         return films;
     }
@@ -148,6 +144,24 @@ public class FilmService {
     public void removeLike(int filmId, int userId) {
         validateLikeFilmData(filmId, userId);
         filmRepository.removeLike(filmId, userId);
+    }
+
+    public Collection<Film> findByDirectorId(int directorId, SortOrder sortOrder) {
+        // Сначала проверяем что режиссер вообще существует
+        directorRepository.getDirectorById(directorId)
+                .orElseThrow(() -> new NotFoundException("Режиссер с id = " + directorId + " не найден"));
+
+        // Получаем фильмы с сортировкой
+        Collection<Film> films = filmRepository.findByDirectorId(
+                directorId,
+                sortOrder
+        );
+
+        // Загружаем жанры и режиссеров для найденных фильмов
+        loadGenresForFilms(films);
+        loadDirectorsForFilms(films);
+
+        return films;
     }
 
     private void validateLikeFilmData(int filmId, int userId) {
@@ -208,6 +222,27 @@ public class FilmService {
         for (Film film : films) {
             Set<Director> directors = directorsByFilmId.getOrDefault(film.getId(), new HashSet<>());
             film.setDirectors(directors);
+        }
+    }
+
+    // Вспомогательный метод для загрузки жанров для коллекции фильмов
+    private void loadGenresForFilms(Collection<Film> films) {
+        if (films == null || films.isEmpty()) {
+            return;
+        }
+
+        // Получаем ID всех фильмов
+        Set<Integer> filmIds = films.stream()
+                .map(Film::getId)
+                .collect(Collectors.toSet());
+
+        // Пакетный запрос (один запрос сразу для всех требуемых фильмов)
+        Map<Integer, Set<Genre>> genresByFilmId = genreRepository.getFilmGenresForFilms(filmIds);
+
+        // Перебираем фильмы и назначаем жанры
+        for (Film film : films) {
+            Set<Genre> genres = genresByFilmId.getOrDefault(film.getId(), new HashSet<>());
+            film.setGenres(genres);
         }
     }
 }

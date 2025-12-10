@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dal.FilmStorage;
 import ru.yandex.practicum.filmorate.exceptions.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.SortOrder;
 
 import java.util.*;
 
@@ -65,5 +66,10 @@ public class InMemoryFilmStorage implements FilmStorage {
         Comparator<Film> likesCountComparator = Comparator.comparingInt((Film f) -> f.getLikesUserIds().size()).reversed();
 
         return films.values().stream().sorted(likesCountComparator).limit(count).toList();
+    }
+
+    @Override
+    public Collection<Film> findByDirectorId(int directorId, SortOrder sortOrder) {
+        return List.of();
     }
 }

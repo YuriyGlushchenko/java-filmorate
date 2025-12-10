@@ -4,7 +4,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exceptions.exceptions.ParameterNotValidException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.SortOrder;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.validators.Marker;
 
@@ -53,5 +55,17 @@ public class FilmController {
     public Collection<Film> findMostPopularFilms(@RequestParam(defaultValue = "10") int count) {
 
         return filmService.findMostPopularFilms(count);
+    }
+
+    @GetMapping("/director/{directorId}")
+    public Collection<Film> findByDirectorId(@RequestParam(defaultValue = "year") String sortBy,
+                                             @PathVariable int directorId) {
+
+        SortOrder sortOrder = SortOrder.from(sortBy);
+        if (sortOrder == null) {
+            throw new ParameterNotValidException("Некорректный параметр запроса. Получено:" + sortBy + " Допустимо: [year,likes]");
+        }
+
+        return filmService.findByDirectorId(directorId, sortOrder);
     }
 }
