@@ -21,7 +21,6 @@ public class GenreDBRepository extends BaseRepository<Genre> implements GenreSto
             "JOIN genre g ON g.genre_id = fg.genre_id " +
             "WHERE film_id = ? " +
             "ORDER BY g.genre_id ASC";
-    ;
 
     private static final String ADD_GENRES_QUERY = "INSERT INTO films_genre (film_id, genre_id) VALUES (?, ?)";
 
