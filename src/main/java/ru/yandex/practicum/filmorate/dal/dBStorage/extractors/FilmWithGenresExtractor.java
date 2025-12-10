@@ -31,10 +31,10 @@ public class FilmWithGenresExtractor implements ResultSetExtractor<Collection<Fi
             int filmId = rs.getInt("film_id");
             Film film = films.get(filmId);
 
-            // Если фильм еще не обработан, создаем его
+            // Если фильма еще нет в films, создаем его и добавляем в мапу
             if (film == null) {
                 film = filmRowMapper.mapRow(rs, rs.getRow());
-                film.setGenres(new HashSet<>());
+                film.setGenres(new HashSet<>()); // пока просто пустой
                 films.put(filmId, film);
             }
 
