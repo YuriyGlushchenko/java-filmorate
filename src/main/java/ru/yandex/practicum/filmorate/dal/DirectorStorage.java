@@ -25,4 +25,6 @@ public interface DirectorStorage {
     Set<Director> getFilmDirectorsByFilmId(int filmId);
 
     Map<Integer, Set<Director>> getFilmDirectorsForFilms(Collection<Integer> filmIds);
+
+    Set<Director> getDirectorsByIds(Collection<Integer> ids);
 }

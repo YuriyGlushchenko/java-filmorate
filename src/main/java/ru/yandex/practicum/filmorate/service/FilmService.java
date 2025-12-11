@@ -8,6 +8,7 @@ import org.springframework.validation.annotation.Validated;
 import ru.yandex.practicum.filmorate.dal.*;
 import ru.yandex.practicum.filmorate.exceptions.exceptions.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.exceptions.exceptions.NotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.exceptions.ParameterNotValidException;
 import ru.yandex.practicum.filmorate.model.*;
 
 import java.util.Collection;
@@ -146,7 +147,12 @@ public class FilmService {
         filmRepository.removeLike(filmId, userId);
     }
 
-    public Collection<Film> findByDirectorId(int directorId, SortOrder sortOrder) {
+    public Collection<Film> findByDirectorId(int directorId, String sortBy) {
+        SortOrder sortOrder = SortOrder.from(sortBy);
+        if (sortOrder == null) {
+            throw new ParameterNotValidException("Некорректный параметр запроса. Получено:" + sortBy + " Допустимо: year или likes");
+        }
+
         // Сначала проверяем что режиссер вообще существует
         directorRepository.getDirectorById(directorId)
                 .orElseThrow(() -> new NotFoundException("Режиссер с id = " + directorId + " не найден"));
@@ -193,10 +199,18 @@ public class FilmService {
             return;
         }
 
-        Set<Integer> existingDirectorIds = directorRepository.findAll().stream()
+        Set<Integer> requestedDirectorIds = directors.stream()
                 .map(Director::getId)
                 .collect(Collectors.toSet());
 
+        // Получаем существующих режиссеров одним batch-запросом
+        Set<Director> existingDirectors = directorRepository.getDirectorsByIds(requestedDirectorIds);
+
+        Set<Integer> existingDirectorIds = existingDirectors.stream()
+                .map(Director::getId)
+                .collect(Collectors.toSet());
+
+        // Проверяем все ли режиссёры существуют в БД
         for (Director director : directors) {
             if (!existingDirectorIds.contains(director.getId())) {
                 throw new ConditionsNotMetException("Режиссер с id = " + director.getId() + " не найден");
@@ -204,7 +218,6 @@ public class FilmService {
         }
     }
 
-    // Вспомогательный метод для загрузки режиссеров для коллекции фильмов
     private void loadDirectorsForFilms(Collection<Film> films) {
         if (films == null || films.isEmpty()) {
             return;
@@ -225,7 +238,6 @@ public class FilmService {
         }
     }
 
-    // Вспомогательный метод для загрузки жанров для коллекции фильмов
     private void loadGenresForFilms(Collection<Film> films) {
         if (films == null || films.isEmpty()) {
             return;

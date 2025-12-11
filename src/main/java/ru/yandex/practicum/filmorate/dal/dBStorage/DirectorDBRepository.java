@@ -21,7 +21,7 @@ public class DirectorDBRepository extends BaseRepository<Director> implements Di
 
     private static final String UPDATE_QUERY = "UPDATE director SET director_name = ? WHERE director_id = ?";
 
-    private static final String DELETE_FRIEND_QUERY = "DELETE FROM director WHERE director_id = ?";
+    private static final String DELETE_DIRECTOR_QUERY = "DELETE FROM director WHERE director_id = ?";
 
     private static final String SAVE_FILM_DIRECTORS_QUERY = "INSERT INTO films_directors (film_id, director_id) VALUES (?, ?)";
 
@@ -65,7 +65,7 @@ public class DirectorDBRepository extends BaseRepository<Director> implements Di
 
     @Override
     public void delete(int id) {
-        delete(DELETE_FRIEND_QUERY, id);
+        delete(DELETE_DIRECTOR_QUERY, id);
     }
 
     @Override
@@ -75,9 +75,11 @@ public class DirectorDBRepository extends BaseRepository<Director> implements Di
 
         // Затем добавляем новых
         if (directors != null && !directors.isEmpty()) {
-            for (Director director : directors) {
-                jdbc.update(SAVE_FILM_DIRECTORS_QUERY, filmId, director.getId());
-            }
+            List<Object[]> batchArgs = directors.stream()
+                    .map(director -> new Object[]{filmId, director.getId()})
+                    .collect(Collectors.toList());
+
+            jdbc.batchUpdate(SAVE_FILM_DIRECTORS_QUERY, batchArgs);
         }
     }
 
@@ -93,27 +95,26 @@ public class DirectorDBRepository extends BaseRepository<Director> implements Di
 
     @Override
     public Map<Integer, Set<Director>> getFilmDirectorsForFilms(Collection<Integer> filmIds) {
-        // Метод возвращает мапу, в которой по id фильмов хранятся множества из режиссёров.
-
         if (filmIds == null || filmIds.isEmpty()) {
             return new HashMap<>();
         }
 
-        // Создаем строку с перечислением ID через запятую
-        String inClause = filmIds.stream()
-                .map(String::valueOf)
+        // Создаём строку из нужного количества плейсхолдеров (строка вида '?, ?, ?, ?' по числу элементов в filmIds)
+        String placeholders = filmIds.stream()
+                .map(id -> "?")
                 .collect(Collectors.joining(","));
 
-        // Составляем SQL-запрос
-        String query = String.format(
+        // Вставляем плейсхолдеры в запрос
+        String query =
                 "SELECT fd.film_id, d.director_id, d.director_name " +
                         "FROM director d " +
                         "JOIN films_directors fd ON d.director_id = fd.director_id " +
-                        "WHERE fd.film_id IN (%s)",
-                inClause
-        );
+                        "WHERE fd.film_id IN (" + placeholders + ")";
 
-        // Выполняем запрос и собираем результаты
+        // Создаем массив параметров
+        Object[] params = filmIds.toArray();
+
+        // Выполняем запрос с параметрами
         return jdbc.query(query, rs -> {
             Map<Integer, Set<Director>> result = new HashMap<>();
             while (rs.next()) {
@@ -122,10 +123,29 @@ public class DirectorDBRepository extends BaseRepository<Director> implements Di
                         .id(rs.getInt("director_id"))
                         .name(rs.getString("director_name"))
                         .build();
-
                 result.computeIfAbsent(filmId, k -> new HashSet<>()).add(director);
             }
             return result;
-        });
+        }, params);
+    }
+
+    @Override
+    public Set<Director> getDirectorsByIds(Collection<Integer> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return new HashSet<>();
+        }
+
+        // Создаём строку из нужного количества плейсхолдеров
+        String placeholders = ids.stream()
+                .map(id -> "?")
+                .collect(Collectors.joining(","));
+
+        String query = String.format(
+                "SELECT * FROM director WHERE director_id IN (%s)",
+                placeholders
+        );
+
+        List<Director> directors = findMany(query, ids.toArray());
+        return new HashSet<>(directors);
     }
 }

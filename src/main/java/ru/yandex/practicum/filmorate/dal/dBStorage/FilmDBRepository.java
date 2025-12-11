@@ -153,13 +153,6 @@ public class FilmDBRepository extends BaseRepository<Film> implements FilmStorag
 
     @Override
     public Collection<Film> findByDirectorId(int directorId, SortOrder sortOrder) {
-//        if ("likes".equalsIgnoreCase(sortOrder)) {
-//            return findMany(FIND_BY_DIRECTOR_ID_QUERY_LIKES, directorId);
-//        } else if ("year".equalsIgnoreCase(sortOrder)) {
-//            return findMany(FIND_BY_DIRECTOR_ID_QUERY_YEAR, directorId);
-//        } else {
-//            throw new IllegalArgumentException("Некорректный параметр сортировки: " + sortOrder);
-//        }
 
         return switch (sortOrder) {
             case YEAR -> findMany(FIND_BY_DIRECTOR_ID_QUERY_YEAR, directorId);
