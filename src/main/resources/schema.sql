@@ -14,6 +14,11 @@ create TABLE IF NOT EXISTS genre (
     genre_name VARCHAR(100) NOT NULL
 );
 
+create TABLE IF NOT EXISTS director (
+    director_id SERIAL PRIMARY KEY,
+    director_name VARCHAR(255) NOT NULL
+);
+
 -- Затем создаем основную таблицу users
 create TABLE IF NOT EXISTS users (
     user_id SERIAL PRIMARY KEY,
@@ -60,4 +65,12 @@ create TABLE IF NOT EXISTS friendship (
     FOREIGN KEY (friend_id) REFERENCES users(user_id) ON delete CASCADE,
     FOREIGN KEY (status_id) REFERENCES status(status_id),
     UNIQUE (user_id, friend_id)
+);
+
+create TABLE IF NOT EXISTS films_directors (
+    film_id INTEGER,
+    director_id INTEGER,
+    PRIMARY KEY (film_id, director_id),
+    FOREIGN KEY (film_id) REFERENCES film(film_id) ON delete CASCADE,
+    FOREIGN KEY (director_id) REFERENCES director(director_id) ON delete CASCADE
 );

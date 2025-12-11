@@ -2,9 +2,7 @@ package ru.yandex.practicum.filmorate.dal;
 
 import ru.yandex.practicum.filmorate.model.Genre;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 public interface GenreStorage {
 
@@ -15,4 +13,6 @@ public interface GenreStorage {
     List<Genre> getFilmGenresByFilmId(int filmId);
 
     void saveFilmGenres(int filmId, Set<Genre> genres);
+
+    Map<Integer, Set<Genre>> getFilmGenresForFilms(Collection<Integer> filmIds);
 }

@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.dal;
 
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.SortOrder;
 
 import java.util.Collection;
 import java.util.Optional;
@@ -19,4 +20,6 @@ public interface FilmStorage {
     public void removeLike(int filmId, int userId);
 
     Collection<Film> findMostPopular(int count);
+
+    Collection<Film> findByDirectorId(int directorId, SortOrder sortOrder);
 }
