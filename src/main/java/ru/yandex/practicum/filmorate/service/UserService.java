@@ -81,6 +81,13 @@ public class UserService {
         return userRepository.update(updateUser);
     }
 
+    public void delete(int id) {
+        userRepository.getUserById(id)
+                .orElseThrow(() -> new NotFoundException("Данные не удалены. Пользователь с id=" + id + " не найден"));
+
+        userRepository.delete(id);
+    }
+
     public User getUserById(int id) {
         return userRepository.getUserById(id)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id = " + id + " не найден"));
