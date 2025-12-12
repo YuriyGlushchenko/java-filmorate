@@ -19,4 +19,5 @@ public interface UserStorage {
 
     List<Integer> checkUserIds(int[] userIds);
 
+    void delete(int id);
 }

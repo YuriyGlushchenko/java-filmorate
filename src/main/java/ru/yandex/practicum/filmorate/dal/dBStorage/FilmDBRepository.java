@@ -35,6 +35,8 @@ public class FilmDBRepository extends BaseRepository<Film> implements FilmStorag
             WHERE f.film_id = ?
             """;
 
+    private static final String REMOVE_BY_ID_QUERY = "DELETE FROM film WHERE film_id = ?;";
+
     private static final String UPDATE_QUERY = """
             UPDATE film
             SET film_name = ?,
@@ -50,21 +52,27 @@ public class FilmDBRepository extends BaseRepository<Film> implements FilmStorag
     private static final String REMOVE_LIKE_QUERY = "DELETE FROM likes WHERE film_id = ? AND user_id = ?;";
 
     private static final String POPULAR_QUERY = """
-            SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration,
-                   r.rating_id, r.rating_name,
-                   film_likes.likes_count
-            FROM (
-                SELECT
-                    l.film_id,
-                    COUNT(l.user_id) AS likes_count
-                FROM likes l
-                GROUP BY l.film_id
-                ORDER BY likes_count DESC
-                LIMIT ?
-            ) AS film_likes
-            JOIN film f ON f.film_id = film_likes.film_id
-            JOIN rating r ON r.rating_id = f.rating_id
-            ORDER BY film_likes.likes_count DESC, f.film_id
+            SELECT f.film_id,
+                   f.film_name,
+                   f.description,
+                   f.release_date,
+                   f.duration,
+                   r.rating_id,
+                   r.rating_name,
+                   COUNT(l.user_id) AS likes_count
+              FROM film f
+              JOIN rating r ON r.rating_id = f.rating_id
+              LEFT JOIN likes l ON l.film_id = f.film_id
+             GROUP BY f.film_id,
+                      f.film_name,
+                      f.description,
+                      f.release_date,
+                      f.duration,
+                      r.rating_id,
+                      r.rating_name
+             ORDER BY likes_count DESC,
+                      f.film_id
+             LIMIT ?
             """;
 
     private static final String FIND_BY_DIRECTOR_ID_QUERY_YEAR = """
@@ -123,7 +131,6 @@ public class FilmDBRepository extends BaseRepository<Film> implements FilmStorag
 
     @Override
     public Film update(Film film) {
-
         update(
                 UPDATE_QUERY,
                 film.getName(),
@@ -134,6 +141,10 @@ public class FilmDBRepository extends BaseRepository<Film> implements FilmStorag
                 film.getId()
         );
         return film;
+    }
+
+    public void delete(int id) {
+        delete(REMOVE_BY_ID_QUERY, id);
     }
 
     @Override

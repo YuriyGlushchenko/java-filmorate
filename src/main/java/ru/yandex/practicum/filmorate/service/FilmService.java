@@ -113,6 +113,13 @@ public class FilmService {
         return filmRepository.update(newFilm);
     }
 
+    public void delete(int id) {
+        filmRepository.getFilmById(id)
+                .orElseThrow(() -> new NotFoundException("Данные не удалены. Фильм с id=" + id + " не найден"));
+
+        filmRepository.delete(id);
+    }
+
     public Film getFilmById(int id) {
         Film film = filmRepository.getFilmById(id).orElseThrow(() -> new NotFoundException("Фильм с id = " + id + " не найден"));
 

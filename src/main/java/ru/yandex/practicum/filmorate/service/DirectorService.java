@@ -40,7 +40,7 @@ public class DirectorService {
 
     public void delete(int id) {
         directorRepository.getDirectorById(id)
-                .orElseThrow(() -> new NotFoundException("Данные не обновлены. Режиссёр с id=" + id + " не найден"));
+                .orElseThrow(() -> new NotFoundException("Данные не удалены. Режиссёр с id=" + id + " не найден"));
 
         directorRepository.delete(id);
     }

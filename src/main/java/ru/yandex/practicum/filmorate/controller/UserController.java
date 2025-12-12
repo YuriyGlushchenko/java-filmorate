@@ -23,7 +23,6 @@ public class UserController {
         return userService.getAllUsers();
     }
 
-
     @PostMapping
     @Validated({Marker.OnCreate.class})
     public User create(@Valid @RequestBody User user) {
@@ -34,6 +33,11 @@ public class UserController {
     @Validated({Marker.OnUpdate.class})
     public User update(@RequestBody @Valid User newUser) {
         return userService.update(newUser);
+    }
+
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable int id) {
+        userService.delete(id);
     }
 
     @GetMapping("/{id}")
