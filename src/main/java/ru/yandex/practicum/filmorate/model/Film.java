@@ -41,4 +41,16 @@ public class Film {
     @Builder.Default
     private Set<Genre> genres = new HashSet<>();
 
+    // Хранение количества лайков из БД
+    @Builder.Default
+    @JsonIgnore
+    private Integer likesCount = 0;
+
+    public int getTotalLikes() {
+        if (likesCount != null && likesCount > 0) {
+            return likesCount;
+        }
+        return likesUserIds.size();
+    }
+
 }

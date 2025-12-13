@@ -49,9 +49,13 @@ public class FilmController {
         filmService.removeLike(filmId, userId);
     }
 
+    // Обновила
     @GetMapping("/popular")
-    public Collection<Film> findMostPopularFilms(@RequestParam(defaultValue = "10") int count) {
+    public Collection<Film> findMostPopularFilms(
+            @RequestParam(defaultValue = "10") int count,
+            @RequestParam(required = false) Integer genreId,
+            @RequestParam(required = false) Integer year) {
 
-        return filmService.findMostPopularFilms(count);
+        return filmService.findMostPopularFilms(count, genreId, year);
     }
 }

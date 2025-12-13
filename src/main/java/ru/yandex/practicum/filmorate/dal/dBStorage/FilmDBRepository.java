@@ -8,7 +8,9 @@ import ru.yandex.practicum.filmorate.dal.FilmStorage;
 import ru.yandex.practicum.filmorate.dal.dBStorage.extractors.FilmWithGenresExtractor;
 import ru.yandex.practicum.filmorate.model.Film;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -44,21 +46,43 @@ public class FilmDBRepository extends BaseRepository<Film> implements FilmStorag
             SELECT
                 f.film_id, f.film_name, f.description, f.release_date, f.duration,
                 r.rating_id, r.rating_name, g.genre_id, g.genre_name,
-                film_likes.likes_count
-            FROM (
-                SELECT
-                    l.film_id,
-                    COUNT(l.user_id) AS likes_count
-                FROM likes l
-                GROUP BY l.film_id
-                ORDER BY likes_count DESC
-                LIMIT ?
-            ) AS film_likes
-            JOIN film f ON f.film_id = film_likes.film_id
+                COALESCE(like_counts.likes_count, 0) AS likes_count
+            FROM film f
             JOIN rating r ON r.rating_id = f.rating_id
+            LEFT JOIN (
+                SELECT film_id, COUNT(user_id) AS likes_count
+                FROM likes
+                GROUP BY film_id
+            ) AS like_counts ON like_counts.film_id = f.film_id
             LEFT JOIN films_genre fg ON fg.film_id = f.film_id
             LEFT JOIN genre g ON g.genre_id = fg.genre_id
-            ORDER BY film_likes.likes_count DESC, f.film_id, g.genre_id
+            ORDER BY COALESCE(like_counts.likes_count, 0) DESC, f.film_id
+            LIMIT ?
+            """;
+
+    // Новая константа для запроса фильма с фильтрами и для фильмов без лайков
+    private static final String POPULAR_WITH_FILTERS_QUERY = """
+            SELECT
+                f.film_id, f.film_name, f.description, f.release_date, f.duration,
+                r.rating_id, r.rating_name, g.genre_id, g.genre_name,
+                COALESCE(like_counts.likes_count, 0) AS likes_count
+            FROM film f
+            JOIN rating r ON r.rating_id = f.rating_id
+            LEFT JOIN (
+                SELECT film_id, COUNT(user_id) AS likes_count
+                FROM likes
+                GROUP BY film_id
+            ) AS like_counts ON like_counts.film_id = f.film_id
+            LEFT JOIN films_genre fg ON fg.film_id = f.film_id
+            LEFT JOIN genre g ON g.genre_id = fg.genre_id
+            WHERE 1=1
+                AND (? IS NULL OR EXISTS (
+                    SELECT 1 FROM films_genre fg2 
+                    WHERE fg2.film_id = f.film_id AND fg2.genre_id = ?
+                ))
+                AND (? IS NULL OR EXTRACT(YEAR FROM f.release_date) = ?)
+            ORDER BY COALESCE(like_counts.likes_count, 0) DESC, f.film_id
+            LIMIT ?
             """;
 
     public FilmDBRepository(JdbcTemplate jdbc, RowMapper<Film> mapper, FilmWithGenresExtractor filmWithGenresExtractor) {
@@ -118,8 +142,31 @@ public class FilmDBRepository extends BaseRepository<Film> implements FilmStorag
         update(REMOVE_LIKE_QUERY, filmId, userId);
     }
 
+    @Override
     public Collection<Film> findMostPopular(int count) {
         return jdbc.query(POPULAR_WITH_GENRES_QUERY, filmWithGenresExtractor, count);
     }
 
+    @Override
+    public Collection<Film> findMostPopularWithFilters(int count, Integer genreId, Integer year) {
+        // Если фильтры не указаны, используем простой запрос
+        if (genreId == null && year == null) {
+            return findMostPopular(count);
+        }
+
+        List<Object> params = new ArrayList<>();
+
+        // Для фильтра по жанру
+        params.add(genreId);
+        params.add(genreId);
+
+        // Для фильтра по году
+        params.add(year);
+        params.add(year);
+
+        // Лимит
+        params.add(count);
+
+        return jdbc.query(POPULAR_WITH_FILTERS_QUERY, filmWithGenresExtractor, params.toArray());
+    }
 }

@@ -19,4 +19,6 @@ public interface FilmStorage {
     public void removeLike(int filmId, int userId);
 
     Collection<Film> findMostPopular(int count);
+
+    Collection<Film> findMostPopularWithFilters(int count, Integer genreId, Integer year);
 }

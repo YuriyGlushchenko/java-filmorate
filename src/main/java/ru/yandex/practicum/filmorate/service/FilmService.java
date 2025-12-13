@@ -15,7 +15,9 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.MpaRating;
 
+import java.time.LocalDate;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -28,7 +30,6 @@ public class FilmService {
     private final MpaRatingStorage mpaRatingRepository;
     private final GenreStorage genreRepository;
 
-    // Вместо @Qualifier выбираем конкретную реализацию бинов в файле настроек. Используется SpEL.
     @Autowired
     public FilmService(
             @Value("#{@${filmorate-app.storage.user-repository}}") UserStorage userRepository,
@@ -97,10 +98,40 @@ public class FilmService {
         return film;
     }
 
+    // Обновила метод
     public Collection<Film> findMostPopularFilms(
-            @Positive(message = "Количество фильмов для отображения должно быть положительным числом") int count) {
+            @Positive(message = "Количество фильмов для отображения должно быть положительным числом") int count,
+            Integer genreId,
+            Integer year) {
 
-        return filmRepository.findMostPopular(count);
+        validatePopularFilmsParameters(count, genreId, year);
+
+        return filmRepository.findMostPopularWithFilters(count, genreId, year);
+    }
+
+    // Валидация параметров
+    private void validatePopularFilmsParameters(int count, Integer genreId, Integer year) {
+        if (count <= 0) {
+            throw new ConditionsNotMetException("Параметр count должен быть положительным числом");
+        }
+
+        if (genreId != null && genreId <= 0) {
+            throw new ConditionsNotMetException("ID жанра должен быть положительным числом");
+        }
+
+        // Проверка существования жанра, если указан
+        if (genreId != null) {
+            genreRepository.getGenreById(genreId)
+                    .orElseThrow(() -> new NotFoundException("Жанр с id = " + genreId + " не найден"));
+        }
+
+        // Валидация года
+        if (year != null) {
+            int currentYear = LocalDate.now().getYear();
+            if (year < 1895) { // Первый фильм был в 1895
+                throw new ConditionsNotMetException("Год не может быть раньше 1895");
+            }
+        }
     }
 
     public void addLike(int filmId, int userId) {
@@ -137,6 +168,15 @@ public class FilmService {
                 throw new ConditionsNotMetException("Жанр с id = " + genre.getId() + " не найден");
             }
         }
+    }
+
+    // Для сортировки фильмов по кол-ву лайков
+    private Comparator<Film> getLikesComparator() {
+        return (film1, film2) -> {
+            int likes1 = film1.getLikesCount() != null ? film1.getLikesCount() : film1.getLikesUserIds().size();
+            int likes2 = film2.getLikesCount() != null ? film2.getLikesCount() : film2.getLikesUserIds().size();
+            return Integer.compare(likes2, likes1);
+        };
     }
 
 }
