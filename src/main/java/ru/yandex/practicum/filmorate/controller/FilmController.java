@@ -34,6 +34,11 @@ public class FilmController {
         return filmService.update(newFilm);
     }
 
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable int id) {
+        filmService.delete(id);
+    }
+
     @GetMapping("/{id}")
     public Film findFilmById(@PathVariable int id) {
         return filmService.getFilmById(id);
