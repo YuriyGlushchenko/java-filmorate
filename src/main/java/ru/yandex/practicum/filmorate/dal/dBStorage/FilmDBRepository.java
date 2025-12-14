@@ -137,6 +137,30 @@ public class FilmDBRepository extends BaseRepository<Film> implements FilmStorag
             LIMIT 20;
             """;
 
+    // Новая константа
+    private static final String POPULAR_WITH_FILTERS_QUERY = """
+    SELECT f.film_id,
+           f.film_name,
+           f.description,
+           f.release_date,
+           f.duration,
+           r.rating_id,
+           r.rating_name,
+           COUNT(l.user_id) AS likes_count
+      FROM film f
+      JOIN rating r ON r.rating_id = f.rating_id
+      LEFT JOIN likes l ON l.film_id = f.film_id
+     WHERE (?1 IS NULL OR EXISTS (
+            SELECT 1 FROM films_genre fg 
+            WHERE f.film_id = fg.film_id AND fg.genre_id = ?1
+        ))
+       AND (?2 IS NULL OR EXTRACT(YEAR FROM f.release_date) = ?2)
+     GROUP BY f.film_id, f.film_name, f.description, f.release_date, 
+              f.duration, r.rating_id, r.rating_name
+     ORDER BY likes_count DESC, f.film_id
+     LIMIT ?3
+    """;
+
     public FilmDBRepository(JdbcTemplate jdbc, FilmRowMapper filmRowMapper) {
         super(jdbc, filmRowMapper);
     }
@@ -214,5 +238,11 @@ public class FilmDBRepository extends BaseRepository<Film> implements FilmStorag
     @Override
     public Collection<Film> getRecomendations(int userId) {
         return findMany(GET_FILM_RECOMENDATIONS_BY_USER_ID_QUERY, userId, userId, userId);
+    }
+
+    // Новый метод
+    @Override
+    public Collection<Film> findMostPopular(int count, Integer genreId, Integer year) {
+        return findMany(POPULAR_WITH_FILTERS_QUERY, genreId, year, count);
     }
 }
