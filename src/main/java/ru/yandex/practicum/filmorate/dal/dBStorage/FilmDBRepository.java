@@ -137,6 +137,23 @@ public class FilmDBRepository extends BaseRepository<Film> implements FilmStorag
             LIMIT 20;
             """;
 
+    private static final String GET_COMMON_FILMS = """
+            SELECT *
+              FROM FILM f
+              JOIN (SELECT f.film_id,
+              			   COUNT(user_id) as total_likes
+              	      FROM FILM f
+              	      JOIN LIKES l USING (film_id)
+              	     GROUP BY f.film_id) USING (film_id)
+              JOIN RATING r ON r.RATING_ID = f.RATING_ID
+              JOIN FILMS_GENRE fg ON f.FILM_ID = fg.FILM_ID
+              JOIN GENRE g ON fg.GENRE_ID = g.GENRE_ID
+             WHERE f.film_id IN (SELECT film_id FROM LIKES WHERE user_id = ?
+                                 INTERSECT
+                                 SELECT film_id FROM LIKES WHERE user_id = ?)
+             ORDER BY total_likes DESC;
+            """;
+
     public FilmDBRepository(JdbcTemplate jdbc, FilmRowMapper filmRowMapper) {
         super(jdbc, filmRowMapper);
     }
@@ -214,5 +231,10 @@ public class FilmDBRepository extends BaseRepository<Film> implements FilmStorag
     @Override
     public Collection<Film> getRecomendations(int userId) {
         return findMany(GET_FILM_RECOMENDATIONS_BY_USER_ID_QUERY, userId, userId, userId);
+    }
+
+    @Override
+    public Collection<Film> getCommonFilms(int userId, int friendId) {
+        return findMany(GET_COMMON_FILMS, userId, friendId);
     }
 }

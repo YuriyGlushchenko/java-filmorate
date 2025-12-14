@@ -53,8 +53,7 @@ public class UserService {
     }
 
     public User update(User updateUser) {
-        User user = userRepository.getUserById(updateUser.getId())
-                .orElseThrow(() -> new NotFoundException("Данные не обновлены. Пользователь с id=" + updateUser.getId() + " не найден"));
+        User user = validateUser(updateUser.getId());
 
         Optional<User> alreadyExistUser = userRepository.findDuplicateDataUser(updateUser.getEmail(), updateUser.getLogin());
 
@@ -71,16 +70,14 @@ public class UserService {
         return userRepository.update(updateUser);
     }
 
-    public void delete(int id) {
-        userRepository.getUserById(id)
-                .orElseThrow(() -> new NotFoundException("Данные не удалены. Пользователь с id=" + id + " не найден"));
+    public void delete(int userId) {
+        validateUser(userId);
 
-        userRepository.delete(id);
+        userRepository.delete(userId);
     }
 
-    public User getUserById(int id) {
-        return userRepository.getUserById(id)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id = " + id + " не найден"));
+    public User getUserById(int userId) {
+        return validateUser(userId);
     }
 
     public void addToFriends(int userId, int friendId) {
@@ -100,10 +97,13 @@ public class UserService {
     }
 
     public Collection<Film> getRecommendations(int userId) {
-        User user = userRepository.getUserById(userId)
-                .orElseThrow(() -> new NotFoundException("Не удалось получить рекомендации. Пользователь с id=" + userId + " не найден"));
+        validateUser(userId);
 
         return filmRepository.getRecomendations(userId);
     }
 
+    private User validateUser(int userId) {
+        return userRepository.getUserById(userId)
+                .orElseThrow(() -> new NotFoundException("Операция не выполнена. Пользователь с id=" + userId + " не найден"));
+    }
 }
