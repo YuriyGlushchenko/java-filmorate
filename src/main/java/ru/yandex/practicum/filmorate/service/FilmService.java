@@ -1,8 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
 import jakarta.validation.constraints.Positive;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 import ru.yandex.practicum.filmorate.dal.*;
@@ -19,27 +18,13 @@ import java.util.stream.Collectors;
 
 @Validated
 @Service
+@RequiredArgsConstructor
 public class FilmService {
     private final FilmStorage filmRepository;
     private final UserStorage userRepository;
     private final MpaRatingStorage mpaRatingRepository;
     private final GenreStorage genreRepository;
     private final DirectorStorage directorRepository;
-
-    // Вместо @Qualifier выбираем конкретную реализацию бинов в файле настроек. Используется SpEL.
-    @Autowired
-    public FilmService(
-            @Value("#{@${filmorate-app.storage.user-repository}}") UserStorage userRepository,
-            @Value("#{@${filmorate-app.storage.film-repository}}") FilmStorage filmRepository,
-            MpaRatingStorage mpaRatingRepository,
-            GenreStorage genreRepository,
-            DirectorStorage directorRepository) {
-        this.userRepository = userRepository;
-        this.filmRepository = filmRepository;
-        this.mpaRatingRepository = mpaRatingRepository;
-        this.genreRepository = genreRepository;
-        this.directorRepository = directorRepository;
-    }
 
     public Collection<Film> findAll() {
         Collection<Film> films = filmRepository.findAll();

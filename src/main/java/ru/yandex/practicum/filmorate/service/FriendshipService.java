@@ -1,9 +1,8 @@
 package ru.yandex.practicum.filmorate.service;
 
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dal.FriendshipStorage;
 import ru.yandex.practicum.filmorate.dal.UserStorage;
@@ -19,18 +18,18 @@ import java.util.List;
 
 @Service
 @Slf4j
-//@RequiredArgsConstructor
+@RequiredArgsConstructor
 public class FriendshipService {
     private final FriendshipStorage friendshipRepository;
     private final UserStorage userRepository;
 
-    @Autowired
-    public FriendshipService(
-            @Value("#{@${filmorate-app.storage.user-repository}}") UserStorage userRepository,
-            FriendshipStorage friendshipRepository) {
-        this.userRepository = userRepository;
-        this.friendshipRepository = friendshipRepository;
-    }
+//    @Autowired
+//    public FriendshipService(
+//            @Value("#{@${filmorate-app.storage.user-repository}}") UserStorage userRepository,
+//            FriendshipStorage friendshipRepository) {
+//        this.userRepository = userRepository;
+//        this.friendshipRepository = friendshipRepository;
+//    }
 
 
     public Friendship addToFriends(int userId, int friendId) {

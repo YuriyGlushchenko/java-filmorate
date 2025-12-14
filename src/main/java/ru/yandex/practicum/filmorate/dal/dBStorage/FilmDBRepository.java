@@ -98,6 +98,45 @@ public class FilmDBRepository extends BaseRepository<Film> implements FilmStorag
             ORDER BY likes_count DESC, f.film_id
             """;
 
+    private static final String GET_FILM_RECOMENDATIONS_BY_USER_ID_QUERY = """
+            SELECT
+                f.film_id,
+                f.film_name,
+                f.description,
+                f.release_date,
+                f.duration,
+                r.rating_id,
+                r.rating_name,
+                COUNT(DISTINCT similar_users.user_id) as recommended_by
+            FROM likes l_other
+            JOIN (
+                SELECT l.user_id, COUNT(l.film_id) as common_likes
+                FROM likes l
+                JOIN likes l1 ON l.film_id = l1.film_id AND l1.user_id = ?
+                WHERE l.user_id != ?
+                GROUP BY l.user_id
+                ORDER BY common_likes DESC
+                LIMIT 10
+            ) similar_users ON l_other.user_id = similar_users.user_id
+            JOIN film f ON l_other.film_id = f.film_id
+            JOIN rating r ON f.rating_id = r.rating_id
+            WHERE NOT EXISTS (
+                SELECT 1 FROM likes l2
+                WHERE l2.user_id = ?
+                AND l2.film_id = l_other.film_id
+            )
+            GROUP BY
+                f.film_id,
+                f.film_name,
+                f.description,
+                f.release_date,
+                f.duration,
+                r.rating_id,
+                r.rating_name
+            ORDER BY COUNT(DISTINCT similar_users.user_id) DESC
+            LIMIT 20;
+            """;
+
     public FilmDBRepository(JdbcTemplate jdbc, FilmRowMapper filmRowMapper) {
         super(jdbc, filmRowMapper);
     }
@@ -172,4 +211,8 @@ public class FilmDBRepository extends BaseRepository<Film> implements FilmStorag
         };
     }
 
+    @Override
+    public Collection<Film> getRecomendations(int userId) {
+        return findMany(GET_FILM_RECOMENDATIONS_BY_USER_ID_QUERY, userId, userId, userId);
+    }
 }
