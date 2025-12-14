@@ -1,15 +1,15 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.dal.FriendshipStorage;
+import ru.yandex.practicum.filmorate.dal.FilmStorage;
 import ru.yandex.practicum.filmorate.dal.UserStorage;
 import ru.yandex.practicum.filmorate.dto.UserDTO;
 import ru.yandex.practicum.filmorate.exceptions.exceptions.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exceptions.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.Collection;
@@ -18,21 +18,11 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class UserService {
     private final UserStorage userRepository;
-    private final FriendshipStorage friendshipRepository;
     private final FriendshipService friendshipService;
-
-    // Вместо @Qualifier и хардкода выбираем конкретную реализацию бинов в файле настроек. Используется SpEL.
-    // *{} - Spring Expression Language, внутри @имя_бина, ${} - значение из application.yml.
-    @Autowired
-    public UserService(@Value("#{@${filmorate-app.storage.user-repository}}") UserStorage userRepository,
-                       FriendshipStorage friendshipRepository,
-                       FriendshipService friendshipService) {
-        this.userRepository = userRepository;
-        this.friendshipRepository = friendshipRepository;
-        this.friendshipService = friendshipService;
-    }
+    private final FilmStorage filmRepository;
 
     public Collection<UserDTO> getAllUsers() {
         return userRepository.getAllUsers().stream()
@@ -107,6 +97,13 @@ public class UserService {
 
     public Collection<User> findCommonFriends(int id, int otherId) {
         return friendshipService.findCommonFriends(id, otherId);
+    }
+
+    public Collection<Film> getRecommendations(int userId) {
+        User user = userRepository.getUserById(userId)
+                .orElseThrow(() -> new NotFoundException("Не удалось получить рекомендации. Пользователь с id=" + userId + " не найден"));
+
+        return filmRepository.getRecomendations(userId);
     }
 
 }
