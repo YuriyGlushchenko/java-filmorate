@@ -9,7 +9,6 @@ import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 import ru.yandex.practicum.filmorate.dal.FilmStorage;
 import ru.yandex.practicum.filmorate.dal.dBStorage.FilmDBRepository;
-import ru.yandex.practicum.filmorate.dal.dBStorage.extractors.FilmWithGenresExtractor;
 import ru.yandex.practicum.filmorate.dal.dBStorage.mappers.FilmRowMapper;
 import ru.yandex.practicum.filmorate.exceptions.exceptions.InternalServerException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -26,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @JdbcTest
 @AutoConfigureTestDatabase
-@Import({FilmDBRepository.class, FilmRowMapper.class, FilmWithGenresExtractor.class})
+@Import({FilmDBRepository.class, FilmRowMapper.class})
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 class FilmDBRepositoryTest {
     private final FilmStorage filmRepository;
