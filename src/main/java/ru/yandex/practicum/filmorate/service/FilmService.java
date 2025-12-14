@@ -9,10 +9,11 @@ import ru.yandex.practicum.filmorate.exceptions.exceptions.ConditionsNotMetExcep
 import ru.yandex.practicum.filmorate.exceptions.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.exceptions.ParameterNotValidException;
 import ru.yandex.practicum.filmorate.model.*;
-import java.time.LocalDate;
-import ru.yandex.practicum.filmorate.exceptions.exceptions.ValidationException;
 
 import java.time.LocalDate;
+
+import ru.yandex.practicum.filmorate.exceptions.exceptions.ValidationException;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
