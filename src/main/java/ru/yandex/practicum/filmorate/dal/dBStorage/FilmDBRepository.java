@@ -149,6 +149,8 @@ public class FilmDBRepository extends BaseRepository<Film> implements FilmStorag
                                  INTERSECT
                                  SELECT film_id FROM LIKES WHERE user_id = ?)
              ORDER BY total_likes DESC;
+            """;
+
     // Новая константа
     private static final String POPULAR_WITH_FILTERS_QUERY = """
             SELECT f.film_id,
@@ -240,6 +242,8 @@ public class FilmDBRepository extends BaseRepository<Film> implements FilmStorag
     @Override
     public Collection<Film> getCommonFilms(int userId, int friendId) {
         return findMany(GET_COMMON_FILMS, userId, friendId);
+    }
+
     // Новый метод
     @Override
     public Collection<Film> findMostPopular(int count, Integer genreId, Integer year) {

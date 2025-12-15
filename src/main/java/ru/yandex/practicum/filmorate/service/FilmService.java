@@ -146,6 +146,8 @@ public class FilmService {
         loadDirectorsForFilms(commonFilms);
 
         return commonFilms;
+    }
+
     public Collection<Film> findMostPopularFilms(int count, Integer genreId, Integer year) {
         // Валидация count
         if (count <= 0) {

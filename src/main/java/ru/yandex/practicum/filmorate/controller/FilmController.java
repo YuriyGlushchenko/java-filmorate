@@ -54,9 +54,9 @@ public class FilmController {
         filmService.removeLike(filmId, userId);
     }
 
-    // Добавила парметры
+    // Добавила параметры
     @GetMapping("/popular")
-    public Collection<Film> findMostPopularFilms(@RequestParam(defaultValue = "10") int count, @RequestParam(required = false) Integer genreId, @RequestParam(required = false) Integer year) {
+    public Collection<Film> findMostPopularFilms(@RequestParam(defaultValue = "1000") int count, @RequestParam(required = false) Integer genreId, @RequestParam(required = false) Integer year) {
 
         return filmService.findMostPopularFilms(count, genreId, year);
     }
