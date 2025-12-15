@@ -123,16 +123,6 @@ public class FilmService {
         return film;
     }
 
-    public Collection<Film> findMostPopularFilms(
-            @Positive(message = "Количество фильмов для отображения должно быть положительным числом") int count) {
-
-        Collection<Film> films = filmRepository.findMostPopular(count);
-        // Загружаем жанры и режиссеров для популярных фильмов
-        loadGenresForFilms(films);
-        loadDirectorsForFilms(films);
-        return films;
-    }
-
     public Collection<Film> getCommonFilms(int userId, int friendId) {
         validateUser(userId);
         validateUser(friendId);

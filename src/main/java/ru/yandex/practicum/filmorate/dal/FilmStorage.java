@@ -19,8 +19,6 @@ public interface FilmStorage {
 
     void removeLike(int filmId, int userId);
 
-    Collection<Film> findMostPopular(int count);
-
     Collection<Film> findByDirectorId(int directorId, SortOrder sortOrder);
 
     void delete(int id);
