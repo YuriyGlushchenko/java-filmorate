@@ -24,8 +24,7 @@ public class FilmDBRepository extends BaseRepository<Film> implements FilmStorag
             ORDER BY f.film_id
             """;
 
-    private static final String INSERT_QUERY = "INSERT INTO film(film_name, description, release_date, duration, " +
-            "rating_id) VALUES (?, ?, ?, ?, ?)";
+    private static final String INSERT_QUERY = "INSERT INTO film(film_name, description, release_date, duration, " + "rating_id) VALUES (?, ?, ?, ?, ?)";
 
     private static final String FIND_BY_ID_QUERY = """
             SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration,
@@ -150,6 +149,28 @@ public class FilmDBRepository extends BaseRepository<Film> implements FilmStorag
                                  INTERSECT
                                  SELECT film_id FROM LIKES WHERE user_id = ?)
              ORDER BY total_likes DESC;
+    // Новая константа
+    private static final String POPULAR_WITH_FILTERS_QUERY = """
+            SELECT f.film_id,
+                   f.film_name,
+                   f.description,
+                   f.release_date,
+                   f.duration,
+                   r.rating_id,
+                   r.rating_name,
+                   COUNT(l.user_id) AS likes_count
+              FROM film f
+              JOIN rating r ON r.rating_id = f.rating_id
+              LEFT JOIN likes l ON l.film_id = f.film_id
+             WHERE (?1 IS NULL OR EXISTS (
+                    SELECT 1 FROM films_genre fg
+                    WHERE f.film_id = fg.film_id AND fg.genre_id = ?1
+                ))
+               AND (?2 IS NULL OR EXTRACT(YEAR FROM f.release_date) = ?2)
+             GROUP BY f.film_id, f.film_name, f.description, f.release_date,
+                      f.duration, r.rating_id, r.rating_name
+             ORDER BY likes_count DESC, f.film_id
+             LIMIT ?3
             """;
 
     public FilmDBRepository(JdbcTemplate jdbc, FilmRowMapper filmRowMapper) {
@@ -164,14 +185,7 @@ public class FilmDBRepository extends BaseRepository<Film> implements FilmStorag
     @Override
     public Film create(Film film) {
 
-        int id = insert(
-                INSERT_QUERY,
-                film.getName(),
-                film.getDescription(),
-                java.sql.Date.valueOf(film.getReleaseDate()),
-                film.getDuration(),
-                film.getMpa().getId()
-        );
+        int id = insert(INSERT_QUERY, film.getName(), film.getDescription(), java.sql.Date.valueOf(film.getReleaseDate()), film.getDuration(), film.getMpa().getId());
 
         film.setId(id);
         return film;
@@ -185,15 +199,7 @@ public class FilmDBRepository extends BaseRepository<Film> implements FilmStorag
 
     @Override
     public Film update(Film film) {
-        update(
-                UPDATE_QUERY,
-                film.getName(),
-                film.getDescription(),
-                java.sql.Date.valueOf(film.getReleaseDate()),
-                film.getDuration(),
-                film.getMpa().getId(),
-                film.getId()
-        );
+        update(UPDATE_QUERY, film.getName(), film.getDescription(), java.sql.Date.valueOf(film.getReleaseDate()), film.getDuration(), film.getMpa().getId(), film.getId());
         return film;
     }
 
@@ -234,5 +240,9 @@ public class FilmDBRepository extends BaseRepository<Film> implements FilmStorag
     @Override
     public Collection<Film> getCommonFilms(int userId, int friendId) {
         return findMany(GET_COMMON_FILMS, userId, friendId);
+    // Новый метод
+    @Override
+    public Collection<Film> findMostPopular(int count, Integer genreId, Integer year) {
+        return findMany(POPULAR_WITH_FILTERS_QUERY, genreId, year, count);
     }
 }

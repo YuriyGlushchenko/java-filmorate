@@ -10,7 +10,14 @@ import ru.yandex.practicum.filmorate.exceptions.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.exceptions.ParameterNotValidException;
 import ru.yandex.practicum.filmorate.model.*;
 
-import java.util.*;
+import java.time.LocalDate;
+
+import ru.yandex.practicum.filmorate.exceptions.exceptions.ValidationException;
+
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Validated
@@ -139,6 +146,35 @@ public class FilmService {
         loadDirectorsForFilms(commonFilms);
 
         return commonFilms;
+    public Collection<Film> findMostPopularFilms(int count, Integer genreId, Integer year) {
+        // Валидация count
+        if (count <= 0) {
+            throw new ValidationException("count", count, "Count должен быть положительным числом");
+        }
+
+        // Валидация года
+        if (year != null) {
+            int currentYear = LocalDate.now().getYear();
+            if (year < 1895 || year > currentYear) {
+                throw new ValidationException("year", year,
+                        "Год должен быть между 1895 и " + currentYear);
+            }
+        }
+
+        // Валидация жанра (если передан)
+        if (genreId != null) {
+            genreRepository.getGenreById(genreId)
+                    .orElseThrow(() -> new NotFoundException("Жанр с id=" + genreId + " не найден"));
+        }
+
+        // Получаем фильмы с фильтрацией
+        Collection<Film> films = filmRepository.findMostPopular(count, genreId, year);
+
+        // Загружаем жанры и режиссеров
+        loadGenresForFilms(films);
+        loadDirectorsForFilms(films);
+
+        return films;
     }
 
     public void addLike(int filmId, int userId) {
