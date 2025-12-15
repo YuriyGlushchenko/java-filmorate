@@ -24,8 +24,7 @@ public class FilmDBRepository extends BaseRepository<Film> implements FilmStorag
             ORDER BY f.film_id
             """;
 
-    private static final String INSERT_QUERY = "INSERT INTO film(film_name, description, release_date, duration, " +
-            "rating_id) VALUES (?, ?, ?, ?, ?)";
+    private static final String INSERT_QUERY = "INSERT INTO film(film_name, description, release_date, duration, " + "rating_id) VALUES (?, ?, ?, ?, ?)";
 
     private static final String FIND_BY_ID_QUERY = """
             SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration,
@@ -34,6 +33,8 @@ public class FilmDBRepository extends BaseRepository<Film> implements FilmStorag
             JOIN rating r ON r.rating_id = f.rating_id
             WHERE f.film_id = ?
             """;
+
+    private static final String REMOVE_BY_ID_QUERY = "DELETE FROM film WHERE film_id = ?;";
 
     private static final String UPDATE_QUERY = """
             UPDATE film
@@ -50,21 +51,27 @@ public class FilmDBRepository extends BaseRepository<Film> implements FilmStorag
     private static final String REMOVE_LIKE_QUERY = "DELETE FROM likes WHERE film_id = ? AND user_id = ?;";
 
     private static final String POPULAR_QUERY = """
-            SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration,
-                   r.rating_id, r.rating_name,
-                   film_likes.likes_count
-            FROM (
-                SELECT
-                    l.film_id,
-                    COUNT(l.user_id) AS likes_count
-                FROM likes l
-                GROUP BY l.film_id
-                ORDER BY likes_count DESC
-                LIMIT ?
-            ) AS film_likes
-            JOIN film f ON f.film_id = film_likes.film_id
-            JOIN rating r ON r.rating_id = f.rating_id
-            ORDER BY film_likes.likes_count DESC, f.film_id
+            SELECT f.film_id,
+                   f.film_name,
+                   f.description,
+                   f.release_date,
+                   f.duration,
+                   r.rating_id,
+                   r.rating_name,
+                   COUNT(l.user_id) AS likes_count
+              FROM film f
+              JOIN rating r ON r.rating_id = f.rating_id
+              LEFT JOIN likes l ON l.film_id = f.film_id
+             GROUP BY f.film_id,
+                      f.film_name,
+                      f.description,
+                      f.release_date,
+                      f.duration,
+                      r.rating_id,
+                      r.rating_name
+             ORDER BY likes_count DESC,
+                      f.film_id
+             LIMIT ?
             """;
 
     private static final String FIND_BY_DIRECTOR_ID_QUERY_YEAR = """
@@ -90,6 +97,84 @@ public class FilmDBRepository extends BaseRepository<Film> implements FilmStorag
             ORDER BY likes_count DESC, f.film_id
             """;
 
+    private static final String GET_FILM_RECOMENDATIONS_BY_USER_ID_QUERY = """
+            SELECT
+                f.film_id,
+                f.film_name,
+                f.description,
+                f.release_date,
+                f.duration,
+                r.rating_id,
+                r.rating_name,
+                COUNT(DISTINCT similar_users.user_id) as recommended_by
+            FROM likes l_other
+            JOIN (
+                SELECT l.user_id, COUNT(l.film_id) as common_likes
+                FROM likes l
+                JOIN likes l1 ON l.film_id = l1.film_id AND l1.user_id = ?
+                WHERE l.user_id != ?
+                GROUP BY l.user_id
+                ORDER BY common_likes DESC
+                LIMIT 10
+            ) similar_users ON l_other.user_id = similar_users.user_id
+            JOIN film f ON l_other.film_id = f.film_id
+            JOIN rating r ON f.rating_id = r.rating_id
+            WHERE NOT EXISTS (
+                SELECT 1 FROM likes l2
+                WHERE l2.user_id = ?
+                AND l2.film_id = l_other.film_id
+            )
+            GROUP BY
+                f.film_id,
+                f.film_name,
+                f.description,
+                f.release_date,
+                f.duration,
+                r.rating_id,
+                r.rating_name
+            ORDER BY COUNT(DISTINCT similar_users.user_id) DESC
+            LIMIT 20;
+            """;
+
+    private static final String GET_COMMON_FILMS = """
+            SELECT *
+              FROM FILM f
+              JOIN (SELECT f.film_id,
+              			   COUNT(user_id) as total_likes
+              	      FROM FILM f
+              	      JOIN LIKES l USING (film_id)
+              	     GROUP BY f.film_id) USING (film_id)
+              JOIN RATING r ON r.RATING_ID = f.RATING_ID
+             WHERE f.film_id IN (SELECT film_id FROM LIKES WHERE user_id = ?
+                                 INTERSECT
+                                 SELECT film_id FROM LIKES WHERE user_id = ?)
+             ORDER BY total_likes DESC;
+            """;
+
+    // Новая константа
+    private static final String POPULAR_WITH_FILTERS_QUERY = """
+            SELECT f.film_id,
+                   f.film_name,
+                   f.description,
+                   f.release_date,
+                   f.duration,
+                   r.rating_id,
+                   r.rating_name,
+                   COUNT(l.user_id) AS likes_count
+              FROM film f
+              JOIN rating r ON r.rating_id = f.rating_id
+              LEFT JOIN likes l ON l.film_id = f.film_id
+             WHERE (?1 IS NULL OR EXISTS (
+                    SELECT 1 FROM films_genre fg
+                    WHERE f.film_id = fg.film_id AND fg.genre_id = ?1
+                ))
+               AND (?2 IS NULL OR EXTRACT(YEAR FROM f.release_date) = ?2)
+             GROUP BY f.film_id, f.film_name, f.description, f.release_date,
+                      f.duration, r.rating_id, r.rating_name
+             ORDER BY likes_count DESC, f.film_id
+             LIMIT ?3
+            """;
+
     public FilmDBRepository(JdbcTemplate jdbc, FilmRowMapper filmRowMapper) {
         super(jdbc, filmRowMapper);
     }
@@ -102,14 +187,7 @@ public class FilmDBRepository extends BaseRepository<Film> implements FilmStorag
     @Override
     public Film create(Film film) {
 
-        int id = insert(
-                INSERT_QUERY,
-                film.getName(),
-                film.getDescription(),
-                java.sql.Date.valueOf(film.getReleaseDate()),
-                film.getDuration(),
-                film.getMpa().getId()
-        );
+        int id = insert(INSERT_QUERY, film.getName(), film.getDescription(), java.sql.Date.valueOf(film.getReleaseDate()), film.getDuration(), film.getMpa().getId());
 
         film.setId(id);
         return film;
@@ -123,17 +201,12 @@ public class FilmDBRepository extends BaseRepository<Film> implements FilmStorag
 
     @Override
     public Film update(Film film) {
-
-        update(
-                UPDATE_QUERY,
-                film.getName(),
-                film.getDescription(),
-                java.sql.Date.valueOf(film.getReleaseDate()),
-                film.getDuration(),
-                film.getMpa().getId(),
-                film.getId()
-        );
+        update(UPDATE_QUERY, film.getName(), film.getDescription(), java.sql.Date.valueOf(film.getReleaseDate()), film.getDuration(), film.getMpa().getId(), film.getId());
         return film;
+    }
+
+    public void delete(int id) {
+        delete(REMOVE_BY_ID_QUERY, id);
     }
 
     @Override
@@ -161,4 +234,19 @@ public class FilmDBRepository extends BaseRepository<Film> implements FilmStorag
         };
     }
 
+    @Override
+    public Collection<Film> getRecomendations(int userId) {
+        return findMany(GET_FILM_RECOMENDATIONS_BY_USER_ID_QUERY, userId, userId, userId);
+    }
+
+    @Override
+    public Collection<Film> getCommonFilms(int userId, int friendId) {
+        return findMany(GET_COMMON_FILMS, userId, friendId);
+    }
+
+    // Новый метод
+    @Override
+    public Collection<Film> findMostPopular(int count, Integer genreId, Integer year) {
+        return findMany(POPULAR_WITH_FILTERS_QUERY, genreId, year, count);
+    }
 }

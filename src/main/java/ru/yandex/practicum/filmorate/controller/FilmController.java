@@ -34,6 +34,11 @@ public class FilmController {
         return filmService.update(newFilm);
     }
 
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable int id) {
+        filmService.delete(id);
+    }
+
     @GetMapping("/{id}")
     public Film findFilmById(@PathVariable int id) {
         return filmService.getFilmById(id);
@@ -49,16 +54,24 @@ public class FilmController {
         filmService.removeLike(filmId, userId);
     }
 
+    // Добавила параметры
     @GetMapping("/popular")
-    public Collection<Film> findMostPopularFilms(@RequestParam(defaultValue = "10") int count) {
+    public Collection<Film> findMostPopularFilms(@RequestParam(defaultValue = "1000") int count, @RequestParam(required = false) Integer genreId, @RequestParam(required = false) Integer year) {
 
-        return filmService.findMostPopularFilms(count);
+        return filmService.findMostPopularFilms(count, genreId, year);
     }
 
     @GetMapping("/director/{directorId}")
     public Collection<Film> findByDirectorId(@RequestParam(defaultValue = "year") String sortBy,
                                              @PathVariable int directorId) {
-
         return filmService.findByDirectorId(directorId, sortBy);
     }
+
+    @GetMapping("/common")
+    public Collection<Film> getCommonFilms(
+            @RequestParam(name = "userId") Integer userId,
+            @RequestParam(name = "friendId") Integer friendId) {
+        return filmService.getCommonFilms(userId, friendId);
+    }
+
 }

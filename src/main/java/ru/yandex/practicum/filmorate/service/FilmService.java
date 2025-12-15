@@ -1,8 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
 import jakarta.validation.constraints.Positive;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 import ru.yandex.practicum.filmorate.dal.*;
@@ -10,6 +9,10 @@ import ru.yandex.practicum.filmorate.exceptions.exceptions.ConditionsNotMetExcep
 import ru.yandex.practicum.filmorate.exceptions.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.exceptions.ParameterNotValidException;
 import ru.yandex.practicum.filmorate.model.*;
+
+import java.time.LocalDate;
+
+import ru.yandex.practicum.filmorate.exceptions.exceptions.ValidationException;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -19,27 +22,13 @@ import java.util.stream.Collectors;
 
 @Validated
 @Service
+@RequiredArgsConstructor
 public class FilmService {
     private final FilmStorage filmRepository;
     private final UserStorage userRepository;
     private final MpaRatingStorage mpaRatingRepository;
     private final GenreStorage genreRepository;
     private final DirectorStorage directorRepository;
-
-    // Вместо @Qualifier выбираем конкретную реализацию бинов в файле настроек. Используется SpEL.
-    @Autowired
-    public FilmService(
-            @Value("#{@${filmorate-app.storage.user-repository}}") UserStorage userRepository,
-            @Value("#{@${filmorate-app.storage.film-repository}}") FilmStorage filmRepository,
-            MpaRatingStorage mpaRatingRepository,
-            GenreStorage genreRepository,
-            DirectorStorage directorRepository) {
-        this.userRepository = userRepository;
-        this.filmRepository = filmRepository;
-        this.mpaRatingRepository = mpaRatingRepository;
-        this.genreRepository = genreRepository;
-        this.directorRepository = directorRepository;
-    }
 
     public Collection<Film> findAll() {
         Collection<Film> films = filmRepository.findAll();
@@ -113,6 +102,13 @@ public class FilmService {
         return filmRepository.update(newFilm);
     }
 
+    public void delete(int id) {
+        filmRepository.getFilmById(id)
+                .orElseThrow(() -> new NotFoundException("Данные не удалены. Фильм с id=" + id + " не найден"));
+
+        filmRepository.delete(id);
+    }
+
     public Film getFilmById(int id) {
         Film film = filmRepository.getFilmById(id).orElseThrow(() -> new NotFoundException("Фильм с id = " + id + " не найден"));
 
@@ -134,6 +130,52 @@ public class FilmService {
         // Загружаем жанры и режиссеров для популярных фильмов
         loadGenresForFilms(films);
         loadDirectorsForFilms(films);
+        return films;
+    }
+
+    public Collection<Film> getCommonFilms(int userId, int friendId) {
+        validateUser(userId);
+        validateUser(friendId);
+
+        Collection<Film> commonFilms = filmRepository.getCommonFilms(userId, friendId);
+
+        // Подгружаем жанры для всех фильмов
+        loadGenresForFilms(commonFilms);
+
+        // Подгружаем режиссёров для всех фильмов
+        loadDirectorsForFilms(commonFilms);
+
+        return commonFilms;
+    }
+
+    public Collection<Film> findMostPopularFilms(int count, Integer genreId, Integer year) {
+        // Валидация count
+        if (count <= 0) {
+            throw new ValidationException("count", count, "Count должен быть положительным числом");
+        }
+
+        // Валидация года
+        if (year != null) {
+            int currentYear = LocalDate.now().getYear();
+            if (year < 1895 || year > currentYear) {
+                throw new ValidationException("year", year,
+                        "Год должен быть между 1895 и " + currentYear);
+            }
+        }
+
+        // Валидация жанра (если передан)
+        if (genreId != null) {
+            genreRepository.getGenreById(genreId)
+                    .orElseThrow(() -> new NotFoundException("Жанр с id=" + genreId + " не найден"));
+        }
+
+        // Получаем фильмы с фильтрацией
+        Collection<Film> films = filmRepository.findMostPopular(count, genreId, year);
+
+        // Загружаем жанры и режиссеров
+        loadGenresForFilms(films);
+        loadDirectorsForFilms(films);
+
         return films;
     }
 
@@ -171,8 +213,7 @@ public class FilmService {
     }
 
     private void validateLikeFilmData(int filmId, int userId) {
-        userRepository.getUserById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id = " + userId + " не найден"));
+        validateUser(userId);
 
         filmRepository.getFilmById(filmId)
                 .orElseThrow(() -> new NotFoundException("Фильм с id = " + filmId + " не найден"));
@@ -257,4 +298,10 @@ public class FilmService {
             film.setGenres(genres);
         }
     }
+
+    private User validateUser(int userId) {
+        return userRepository.getUserById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь с id=" + userId + " не найден"));
+    }
+
 }
