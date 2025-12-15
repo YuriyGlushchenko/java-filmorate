@@ -45,7 +45,9 @@ public class ReviewDBRepository extends BaseRepository<Review> implements Review
     }
 
     @Override
-    public Collection<Review> findAll(int count) { return findMany(FIND_ALL_REVIEWS_QUERY, count); }
+    public Collection<Review> findAll(int count) {
+        return findMany(FIND_ALL_REVIEWS_QUERY, count);
+    }
 
     @Override
     public Optional<Review> getReviewById(int id) {
