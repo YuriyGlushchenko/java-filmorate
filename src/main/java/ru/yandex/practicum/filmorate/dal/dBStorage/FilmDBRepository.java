@@ -146,8 +146,6 @@ public class FilmDBRepository extends BaseRepository<Film> implements FilmStorag
               	      JOIN LIKES l USING (film_id)
               	     GROUP BY f.film_id) USING (film_id)
               JOIN RATING r ON r.RATING_ID = f.RATING_ID
-              JOIN FILMS_GENRE fg ON f.FILM_ID = fg.FILM_ID
-              JOIN GENRE g ON fg.GENRE_ID = g.GENRE_ID
              WHERE f.film_id IN (SELECT film_id FROM LIKES WHERE user_id = ?
                                  INTERSECT
                                  SELECT film_id FROM LIKES WHERE user_id = ?)
