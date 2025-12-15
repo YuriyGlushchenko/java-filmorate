@@ -7,9 +7,11 @@ import java.util.Optional;
 
 public interface ReviewStorage {
 
-    Collection<Review> findAll();
+    Collection<Review> findAll(int count);
 
     Optional<Review> getReviewById(int id);
+
+    Collection<Review> getAllReviewById(int filmId, int count);
 
     Review create(Review review);
 
@@ -17,11 +19,7 @@ public interface ReviewStorage {
 
     void delete(int id);
 
-    boolean isExists(int id);
-
-    //void increaseScore(Review review);
-
-    //void decreaseScore(Review review);
+    boolean isNotExists(int id);
 
     void updateUseful(int reviewId);
 

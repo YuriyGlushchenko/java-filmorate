@@ -1,17 +1,16 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import org.springframework.validation.annotation.Validated;
-import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.service.ReviewService;
 
 import jakarta.validation.Valid;
+import org.springframework.validation.annotation.Validated;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.validators.Marker;
 
 import java.util.Collection;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/reviews")
@@ -19,15 +18,15 @@ import java.util.Optional;
 public class ReviewController {
     private final ReviewService reviewService;
 
-    @GetMapping("/{id}")
-    public Review getReviewById(@PathVariable int id) {
-        return reviewService.getReviewById(id);
-    }
-
     @PostMapping
     @Validated({Marker.OnCreate.class})
     public Review create(@Valid @RequestBody Review review) {
         return reviewService.create(review);
+    }
+
+    @GetMapping("/{id}")
+    public Review getReviewById(@PathVariable("id") int id) {
+        return reviewService.getReviewById(id);
     }
 
     @PutMapping
@@ -46,16 +45,16 @@ public class ReviewController {
             @RequestParam(name = "filmId", defaultValue = "0", required = false) int filmId,
             @RequestParam(name = "count", defaultValue = "10", required = false) int count
     ) {
-        return reviewService.findAll();
+        return reviewService.findAll(filmId, count);
     }
 
     @PutMapping("/{id}/like/{userId}")
-    public void likeAReview(@PathVariable int id, @PathVariable int userId) {
+    public void likeReview(@PathVariable int id, @PathVariable int userId) {
         reviewService.addLikeToReview(id, userId);
     }
 
     @PutMapping("/{id}/dislike/{userId}")
-    public void dislikeAReview(@PathVariable int id, @PathVariable int userId) {
+    public void dislikeReview(@PathVariable int id, @PathVariable int userId) {
         reviewService.addDislikeToReview(id, userId);
     }
 
