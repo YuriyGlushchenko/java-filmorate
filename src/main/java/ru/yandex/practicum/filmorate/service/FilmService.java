@@ -133,6 +133,21 @@ public class FilmService {
         return films;
     }
 
+    public Collection<Film> getCommonFilms(int userId, int friendId) {
+        validateUser(userId);
+        validateUser(friendId);
+
+        Collection<Film> commonFilms = filmRepository.getCommonFilms(userId, friendId);
+
+        // Подгружаем жанры для всех фильмов
+        loadGenresForFilms(commonFilms);
+
+        // Подгружаем режиссёров для всех фильмов
+        loadDirectorsForFilms(commonFilms);
+
+        return commonFilms;
+    }
+
     public Collection<Film> findMostPopularFilms(int count, Integer genreId, Integer year) {
         // Валидация count
         if (count <= 0) {
@@ -198,8 +213,7 @@ public class FilmService {
     }
 
     private void validateLikeFilmData(int filmId, int userId) {
-        userRepository.getUserById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id = " + userId + " не найден"));
+        validateUser(userId);
 
         filmRepository.getFilmById(filmId)
                 .orElseThrow(() -> new NotFoundException("Фильм с id = " + filmId + " не найден"));
@@ -284,4 +298,10 @@ public class FilmService {
             film.setGenres(genres);
         }
     }
+
+    private User validateUser(int userId) {
+        return userRepository.getUserById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь с id=" + userId + " не найден"));
+    }
+
 }
