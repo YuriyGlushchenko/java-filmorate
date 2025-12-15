@@ -14,10 +14,7 @@ import java.time.LocalDate;
 
 import ru.yandex.practicum.filmorate.exceptions.exceptions.ValidationException;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Validated
@@ -302,6 +299,27 @@ public class FilmService {
     private User validateUser(int userId) {
         return userRepository.getUserById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id=" + userId + " не найден"));
+    }
+
+    public Collection<Film> searchFilms(String query, List<String> by) {
+        if (query == null || query.isBlank()) {
+            return List.of();
+        }
+
+        // Определяем что искать
+        boolean searchByTitle = by.stream().anyMatch("title"::equalsIgnoreCase);
+        boolean searchByDirector = by.stream().anyMatch("director"::equalsIgnoreCase);
+
+        // Если ничего не выбрано, то поиск повсюду
+        if (!searchByTitle && !searchByDirector) {
+            searchByTitle = searchByDirector = true;
+        }
+
+        Collection<Film> films = filmRepository.searchFilms(query.trim(), searchByTitle, searchByDirector);
+        loadGenresForFilms(films);
+        loadDirectorsForFilms(films);
+
+        return films;
     }
 
 }

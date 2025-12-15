@@ -175,6 +175,50 @@ public class FilmDBRepository extends BaseRepository<Film> implements FilmStorag
              LIMIT ?3
             """;
 
+    private static final String SEARCH_BY_TITLE_QUERY = """
+            SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration,
+                   r.rating_id, r.rating_name,
+                   COUNT(l.user_id) AS likes_count
+            FROM film f
+            JOIN rating r ON r.rating_id = f.rating_id
+            LEFT JOIN likes l ON l.film_id = f.film_id
+            WHERE LOWER(f.film_name) LIKE LOWER(CONCAT('%', ?, '%'))
+            GROUP BY f.film_id, f.film_name, f.description, f.release_date, f.duration, 
+                     r.rating_id, r.rating_name
+            ORDER BY likes_count DESC, f.film_id
+            """;
+
+    private static final String SEARCH_BY_DIRECTOR_QUERY = """
+            SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration,
+                   r.rating_id, r.rating_name,
+                   COUNT(l.user_id) AS likes_count
+            FROM film f
+            JOIN rating r ON r.rating_id = f.rating_id
+            JOIN films_directors fd ON f.film_id = fd.film_id
+            JOIN director d ON fd.director_id = d.director_id
+            LEFT JOIN likes l ON l.film_id = f.film_id
+            WHERE LOWER(d.director_name) LIKE LOWER(CONCAT('%', ?, '%'))
+            GROUP BY f.film_id, f.film_name, f.description, f.release_date, f.duration, 
+                     r.rating_id, r.rating_name
+            ORDER BY likes_count DESC, f.film_id
+            """;
+
+    private static final String SEARCH_BY_TITLE_AND_DIRECTOR_QUERY = """
+            SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration,
+                   r.rating_id, r.rating_name,
+                   COUNT(l.user_id) AS likes_count
+            FROM film f
+            JOIN rating r ON r.rating_id = f.rating_id
+            LEFT JOIN films_directors fd ON f.film_id = fd.film_id
+            LEFT JOIN director d ON fd.director_id = d.director_id
+            LEFT JOIN likes l ON l.film_id = f.film_id
+            WHERE LOWER(f.film_name) LIKE LOWER(CONCAT('%', ?, '%'))
+               OR LOWER(d.director_name) LIKE LOWER(CONCAT('%', ?, '%'))
+            GROUP BY f.film_id, f.film_name, f.description, f.release_date, f.duration, 
+                     r.rating_id, r.rating_name
+            ORDER BY likes_count DESC, f.film_id
+            """;
+
     public FilmDBRepository(JdbcTemplate jdbc, FilmRowMapper filmRowMapper) {
         super(jdbc, filmRowMapper);
     }
@@ -248,5 +292,22 @@ public class FilmDBRepository extends BaseRepository<Film> implements FilmStorag
     @Override
     public Collection<Film> findMostPopular(int count, Integer genreId, Integer year) {
         return findMany(POPULAR_WITH_FILTERS_QUERY, genreId, year, count);
+    }
+
+    @Override
+    public Collection<Film> searchFilms(String query, boolean searchByTitle, boolean searchByDirector) {
+        if (!searchByTitle && !searchByDirector) {
+            // Если не указано где искать, ищем везде
+            return findMany(SEARCH_BY_TITLE_AND_DIRECTOR_QUERY, query, query);
+        } else if (searchByTitle && searchByDirector) {
+            // Ищем и по названию, и по режиссёру
+            return findMany(SEARCH_BY_TITLE_AND_DIRECTOR_QUERY, query, query);
+        } else if (searchByTitle) {
+            // Только по названию
+            return findMany(SEARCH_BY_TITLE_QUERY, query);
+        } else {
+            // Только по режиссёру
+            return findMany(SEARCH_BY_DIRECTOR_QUERY, query);
+        }
     }
 }

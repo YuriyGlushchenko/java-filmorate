@@ -30,4 +30,6 @@ public interface FilmStorage {
     Collection<Film> findMostPopular(int count, Integer genreId, Integer year);
 
     Collection<Film> getCommonFilms(int userId, int friendId);
+
+    Collection<Film> searchFilms(String query, boolean searchByTitle, boolean searchByDirector);
 }
