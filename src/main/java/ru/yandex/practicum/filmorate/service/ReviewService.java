@@ -28,7 +28,6 @@ public class ReviewService {
     }
 
     public Review update(Review review) {
-//        checker(review.getFilmId(), review.getUserId());
         Review uploadedReview = reviewRepository.getReviewById(review.getReviewId())
                 .orElseThrow(() -> new NotFoundException("Данные не обновлены. Отзыв с id=" + review.getReviewId() + " не найден"));
         review.setFilmId(uploadedReview.getFilmId());
