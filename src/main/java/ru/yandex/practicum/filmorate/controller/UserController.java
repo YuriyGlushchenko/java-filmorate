@@ -5,8 +5,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.dto.UserDTO;
+import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.FeedService;
 import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.validators.Marker;
 
@@ -18,6 +20,7 @@ import java.util.Collection;
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
+    private final FeedService feedService;
 
     @GetMapping
     public Collection<UserDTO> findAll() {
@@ -71,4 +74,8 @@ public class UserController {
         return userService.getRecommendations(userId);
     }
 
+    @GetMapping("/{id}/feed")
+    public Collection<Feed> findFeeds(@PathVariable("id") int userId) {
+        return feedService.findFeeds(userId);
+    }
 }

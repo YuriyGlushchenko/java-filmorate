@@ -94,3 +94,14 @@ CREATE TABLE IF NOT EXISTS review_likes (
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
     PRIMARY KEY (review_id, user_id)
 );
+
+CREATE TABLE IF NOT EXISTS feeds
+(
+    event_id SERIAL PRIMARY KEY,
+    create_time BIGINT NOT NULL,
+    type VARCHAR(50) NOT NULL,
+    operation VARCHAR(50) NOT NULL,
+    user_id INTEGER NOT NULL,
+    entity_id INTEGER NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+)

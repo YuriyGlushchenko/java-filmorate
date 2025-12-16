@@ -1,9 +1,13 @@
 package ru.yandex.practicum.filmorate.service;
 
+import ru.yandex.practicum.filmorate.dal.FeedStorage;
 import ru.yandex.practicum.filmorate.dal.FilmStorage;
 import ru.yandex.practicum.filmorate.dal.UserStorage;
+import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.dal.ReviewStorage;
+import static ru.yandex.practicum.filmorate.model.FeedType.*;
+import static ru.yandex.practicum.filmorate.model.FeedOperation.*;
 import ru.yandex.practicum.filmorate.exceptions.exceptions.NotFoundException;
 
 import lombok.RequiredArgsConstructor;
@@ -11,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
+import java.time.Instant;
 import java.util.Collection;
 
 @Slf4j
@@ -21,9 +26,21 @@ public class ReviewService {
     private final ReviewStorage reviewRepository;
     private final FilmStorage filmRepository;
     private final UserStorage userRepository;
+    private final FeedStorage feedRepository;
 
     public Review create(Review review) {
         checker(review.getFilmId(), review.getUserId());
+
+        Feed createdFeed = Feed.builder()
+                .timestamp(Instant.now().toEpochMilli())
+                .feedType(REVIEW)
+                .feedOperation(ADD)
+                .userId(review.getUserId())
+                .entityId(review.getFilmId())
+                .build();
+
+        feedRepository.create(createdFeed);
+
         return reviewRepository.create(review);
     }
 
@@ -31,13 +48,39 @@ public class ReviewService {
         checker(review.getFilmId(), review.getUserId());
         reviewRepository.getReviewById(review.getReviewId())
                 .orElseThrow(() -> new NotFoundException("Данные не обновлены. Отзыв с id=" + review.getReviewId() + " не найден"));
+
+        Feed createdFeed = Feed.builder()
+                .timestamp(Instant.now().toEpochMilli())
+                .feedType(REVIEW)
+                .feedOperation(UPDATE)
+                .userId(review.getUserId())
+                .entityId(review.getFilmId())
+                .build();
+
+        feedRepository.create(createdFeed);
+
         return reviewRepository.update(review);
     }
 
     public void delete(Integer id) {
         if (reviewRepository.isNotExists(id))
             throw new NotFoundException("Отзыв не найден: пустой или неправильный идентификатор");
+
         reviewRepository.delete(id);
+
+        if (reviewRepository.getReviewById(id).isPresent()) {
+            Review review = reviewRepository.getReviewById(id).get();
+
+            Feed createdFeed = Feed.builder()
+                    .timestamp(Instant.now().toEpochMilli())
+                    .feedType(REVIEW)
+                    .feedOperation(REMOVE)
+                    .userId(review.getUserId())
+                    .entityId(review.getFilmId())
+                    .build();
+
+            feedRepository.create(createdFeed);
+        }
     }
 
     public Review getReviewById(Integer id) {
