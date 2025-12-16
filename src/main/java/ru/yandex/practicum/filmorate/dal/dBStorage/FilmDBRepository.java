@@ -183,7 +183,7 @@ public class FilmDBRepository extends BaseRepository<Film> implements FilmStorag
             JOIN rating r ON r.rating_id = f.rating_id
             LEFT JOIN likes l ON l.film_id = f.film_id
             WHERE LOWER(f.film_name) LIKE LOWER(CONCAT('%', ?, '%'))
-            GROUP BY f.film_id, f.film_name, f.description, f.release_date, f.duration
+            GROUP BY f.film_id, f.film_name, f.description, f.release_date, f.duration,
                      r.rating_id, r.rating_name
             ORDER BY likes_count DESC, f.film_id
             """;
@@ -198,7 +198,7 @@ public class FilmDBRepository extends BaseRepository<Film> implements FilmStorag
             JOIN director d ON fd.director_id = d.director_id
             LEFT JOIN likes l ON l.film_id = f.film_id
             WHERE LOWER(d.director_name) LIKE LOWER(CONCAT('%', ?, '%'))
-            GROUP BY f.film_id, f.film_name, f.description, f.release_date, f.duration
+            GROUP BY f.film_id, f.film_name, f.description, f.release_date, f.duration,
                      r.rating_id, r.rating_name
             ORDER BY likes_count DESC, f.film_id
             """;

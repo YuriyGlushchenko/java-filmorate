@@ -17,7 +17,6 @@ public class Director {
     private Integer id;
 
     @Size(max = 255, message = "Имя режиссёра не должно превышать 255 символов")
-    @Pattern(regexp = "^[a-zA-Zа-яА-ЯёЁ\\s\\-]+$", message = "Имя режиссёра должно содержать только буквы, пробелы и дефисы")
     @NotBlank
     private String name;
 
