@@ -66,7 +66,7 @@ public class ReviewService {
 
     public void delete(Integer id) {
         Review review = reviewRepository.getReviewById(id)
-                .orElseThrow(()-> new NotFoundException("Отзыв не найден: пустой или неправильный идентификатор"));
+                .orElseThrow(() -> new NotFoundException("Отзыв не найден: пустой или неправильный идентификатор"));
 
         reviewRepository.delete(id);
 
