@@ -274,11 +274,6 @@ public class FilmDBRepository extends BaseRepository<Film> implements FilmStorag
     }
 
     @Override
-    public Collection<Film> findMostPopular(int count) {
-        return findMany(POPULAR_QUERY, count);
-    }
-
-    @Override
     public Collection<Film> findByDirectorId(int directorId, SortOrder sortOrder) {
 
         return switch (sortOrder) {

@@ -23,15 +23,6 @@ public class FriendshipService {
     private final FriendshipStorage friendshipRepository;
     private final UserStorage userRepository;
 
-//    @Autowired
-//    public FriendshipService(
-//            @Value("#{@${filmorate-app.storage.user-repository}}") UserStorage userRepository,
-//            FriendshipStorage friendshipRepository) {
-//        this.userRepository = userRepository;
-//        this.friendshipRepository = friendshipRepository;
-//    }
-
-
     public Friendship addToFriends(int userId, int friendId) {
 
         validateUsersExist(userId, friendId);
@@ -43,15 +34,12 @@ public class FriendshipService {
                 .build();
 
         return friendshipRepository.create(friendship);
-
     }
 
     public void removeFromFriends(int userId, int friendId) {
         validateUsersExist(userId, friendId);
 
         friendshipRepository.removeFromFriends(userId, friendId);
-
-
     }
 
     public List<UserDTO> getUserFriends(int userId) {
@@ -81,7 +69,5 @@ public class FriendshipService {
                 throw new NotFoundException("Данные не обновлены. Пользователь с id=" + userId + " не найден");
             }
         }
-
-
     }
 }
