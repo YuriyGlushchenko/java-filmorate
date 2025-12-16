@@ -28,9 +28,11 @@ public class ReviewService {
     }
 
     public Review update(Review review) {
-        checker(review.getFilmId(), review.getUserId());
-        reviewRepository.getReviewById(review.getReviewId())
+//        checker(review.getFilmId(), review.getUserId());
+        Review uploadedReview = reviewRepository.getReviewById(review.getReviewId())
                 .orElseThrow(() -> new NotFoundException("Данные не обновлены. Отзыв с id=" + review.getReviewId() + " не найден"));
+        review.setFilmId(uploadedReview.getFilmId());
+        review.setUserId(uploadedReview.getUserId());
         return reviewRepository.update(review);
     }
 
@@ -46,7 +48,7 @@ public class ReviewService {
     }
 
     public Collection<Review> findAll(Integer filmId, int count) {
-        if (filmId == null)
+        if (filmId == 0)
             return reviewRepository.findAll(count);
         return reviewRepository.getAllReviewById(filmId, count);
     }
