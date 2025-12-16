@@ -46,7 +46,11 @@ public class FilmDBRepository extends BaseRepository<Film> implements FilmStorag
             WHERE film_id = ?
             """;
 
-    private static final String ADD_LIKE_QUERY = "INSERT INTO likes (film_id, user_id) VALUES (?, ?)";
+    private static final String ADD_LIKE_QUERY = """
+            MERGE INTO likes (film_id, user_id)
+            KEY (film_id, user_id)
+            VALUES (?, ?)
+            """;
 
     private static final String REMOVE_LIKE_QUERY = "DELETE FROM likes WHERE film_id = ? AND user_id = ?;";
 

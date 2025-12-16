@@ -216,6 +216,14 @@ public class FilmService {
         return films;
     }
 
+    public Collection<Film> getRecommendations(int userId) {
+        Collection<Film> recomendations = filmRepository.getRecomendations(userId);
+        loadGenresForFilms(recomendations);
+        loadDirectorsForFilms(recomendations);
+
+        return recomendations;
+    }
+
     private void validateLikeFilmData(int filmId, int userId) {
         validateUser(userId);
 

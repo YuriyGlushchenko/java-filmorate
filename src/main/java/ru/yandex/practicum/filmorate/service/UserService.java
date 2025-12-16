@@ -23,6 +23,7 @@ public class UserService {
     private final UserStorage userRepository;
     private final FriendshipService friendshipService;
     private final FilmStorage filmRepository;
+    private final FilmService filmService;
 
     public Collection<UserDTO> getAllUsers() {
         return userRepository.getAllUsers().stream()
@@ -99,7 +100,7 @@ public class UserService {
     public Collection<Film> getRecommendations(int userId) {
         validateUser(userId);
 
-        return filmRepository.getRecomendations(userId);
+        return filmService.getRecommendations(userId);
     }
 
     private User validateUser(int userId) {
