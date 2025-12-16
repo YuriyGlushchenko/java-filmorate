@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.service;
 
-import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
@@ -121,16 +120,6 @@ public class FilmService {
         film.setDirectors(directors);
 
         return film;
-    }
-
-    public Collection<Film> findMostPopularFilms(
-            @Positive(message = "Количество фильмов для отображения должно быть положительным числом") int count) {
-
-        Collection<Film> films = filmRepository.findMostPopular(count);
-        // Загружаем жанры и режиссеров для популярных фильмов
-        loadGenresForFilms(films);
-        loadDirectorsForFilms(films);
-        return films;
     }
 
     public Collection<Film> getCommonFilms(int userId, int friendId) {

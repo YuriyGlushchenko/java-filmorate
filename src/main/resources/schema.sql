@@ -74,3 +74,23 @@ create TABLE IF NOT EXISTS films_directors (
     FOREIGN KEY (film_id) REFERENCES film(film_id) ON delete CASCADE,
     FOREIGN KEY (director_id) REFERENCES director(director_id) ON delete CASCADE
 );
+
+create TABLE IF NOT EXISTS reviews (
+    review_id SERIAL PRIMARY KEY,
+    content VARCHAR NOT NULL,
+    is_positive BOOLEAN NOT NULL DEFAULT false,
+    user_id INTEGER NOT NULL,
+    film_id INTEGER NOT NULL,
+    useful INTEGER DEFAULT 0,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON delete CASCADE,
+    FOREIGN KEY (film_id) REFERENCES film(film_id) ON delete CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS review_likes (
+    review_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    is_positive BOOLEAN NOT NULL,
+    FOREIGN KEY (review_id) REFERENCES reviews(review_id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    PRIMARY KEY (review_id, user_id)
+);
