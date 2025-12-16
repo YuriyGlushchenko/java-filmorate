@@ -31,17 +31,18 @@ public class ReviewService {
     public Review create(Review review) {
         checker(review.getFilmId(), review.getUserId());
 
+        Review createdReview = reviewRepository.create(review);
+
         Feed createdFeed = Feed.builder()
                 .timestamp(Instant.now().toEpochMilli())
                 .feedType(REVIEW)
                 .feedOperation(ADD)
                 .userId(review.getUserId())
-                .entityId(review.getFilmId())
+                .entityId(review.getReviewId())
                 .build();
-
         feedRepository.create(createdFeed);
 
-        return reviewRepository.create(review);
+        return createdReview;
     }
 
     public Review update(Review review) {
@@ -49,38 +50,34 @@ public class ReviewService {
         reviewRepository.getReviewById(review.getReviewId())
                 .orElseThrow(() -> new NotFoundException("Данные не обновлены. Отзыв с id=" + review.getReviewId() + " не найден"));
 
+        Review updatedReview = reviewRepository.update(review);
+
         Feed createdFeed = Feed.builder()
                 .timestamp(Instant.now().toEpochMilli())
                 .feedType(REVIEW)
                 .feedOperation(UPDATE)
                 .userId(review.getUserId())
-                .entityId(review.getFilmId())
+                .entityId(review.getReviewId())
                 .build();
-
         feedRepository.create(createdFeed);
 
-        return reviewRepository.update(review);
+        return updatedReview;
     }
 
     public void delete(Integer id) {
-        if (reviewRepository.isNotExists(id))
-            throw new NotFoundException("Отзыв не найден: пустой или неправильный идентификатор");
+        Review review = reviewRepository.getReviewById(id)
+                .orElseThrow(()-> new NotFoundException("Отзыв не найден: пустой или неправильный идентификатор"));
 
         reviewRepository.delete(id);
 
-        if (reviewRepository.getReviewById(id).isPresent()) {
-            Review review = reviewRepository.getReviewById(id).get();
-
-            Feed createdFeed = Feed.builder()
-                    .timestamp(Instant.now().toEpochMilli())
-                    .feedType(REVIEW)
-                    .feedOperation(REMOVE)
-                    .userId(review.getUserId())
-                    .entityId(review.getFilmId())
-                    .build();
-
-            feedRepository.create(createdFeed);
-        }
+        Feed createdFeed = Feed.builder()
+                .timestamp(Instant.now().toEpochMilli())
+                .feedType(REVIEW)
+                .feedOperation(REMOVE)
+                .userId(review.getUserId())
+                .entityId(review.getReviewId())
+                .build();
+        feedRepository.create(createdFeed);
     }
 
     public Review getReviewById(Integer id) {
