@@ -3,15 +3,20 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dal.FeedStorage;
 import ru.yandex.practicum.filmorate.dal.FilmStorage;
 import ru.yandex.practicum.filmorate.dal.UserStorage;
 import ru.yandex.practicum.filmorate.dto.UserDTO;
 import ru.yandex.practicum.filmorate.exceptions.exceptions.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exceptions.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
+import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import static ru.yandex.practicum.filmorate.model.FeedType.*;
+import static ru.yandex.practicum.filmorate.model.FeedOperation.*;
 
+import java.time.Instant;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -24,6 +29,7 @@ public class UserService {
     private final FriendshipService friendshipService;
     private final FilmStorage filmRepository;
     private final FilmService filmService;
+    private final FeedStorage feedRepository;
 
     public Collection<UserDTO> getAllUsers() {
         return userRepository.getAllUsers().stream()
@@ -83,10 +89,30 @@ public class UserService {
 
     public void addToFriends(int userId, int friendId) {
         friendshipService.addToFriends(userId, friendId);
+
+        Feed createdFeed = Feed.builder()
+                .timestamp(Instant.now().toEpochMilli())
+                .feedType(FRIEND)
+                .feedOperation(ADD)
+                .userId(userId)
+                .entityId(friendId)
+                .build();
+
+        feedRepository.create(createdFeed);
     }
 
     public void removeFromFriends(int userId, int friendId) {
         friendshipService.removeFromFriends(userId, friendId);
+
+        Feed createdFeed = Feed.builder()
+                .timestamp(Instant.now().toEpochMilli())
+                .feedType(FRIEND)
+                .feedOperation(REMOVE)
+                .userId(userId)
+                .entityId(friendId)
+                .build();
+
+        feedRepository.create(createdFeed);
     }
 
     public Collection<UserDTO> getUserFriends(int userId) {

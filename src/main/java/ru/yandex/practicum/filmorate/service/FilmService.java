@@ -9,7 +9,10 @@ import ru.yandex.practicum.filmorate.exceptions.exceptions.ConditionsNotMetExcep
 import ru.yandex.practicum.filmorate.exceptions.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.exceptions.ParameterNotValidException;
 import ru.yandex.practicum.filmorate.model.*;
+import static ru.yandex.practicum.filmorate.model.FeedType.*;
+import static ru.yandex.practicum.filmorate.model.FeedOperation.*;
 
+import java.time.Instant;
 import java.time.LocalDate;
 
 import ru.yandex.practicum.filmorate.exceptions.exceptions.ValidationException;
@@ -27,6 +30,7 @@ public class FilmService {
     private final MpaRatingStorage mpaRatingRepository;
     private final GenreStorage genreRepository;
     private final DirectorStorage directorRepository;
+    private final FeedStorage feedRepository;
 
     public Collection<Film> findAll() {
         Collection<Film> films = filmRepository.findAll();
@@ -175,11 +179,31 @@ public class FilmService {
     public void addLike(int filmId, int userId) {
         validateLikeFilmData(filmId, userId);
         filmRepository.addLike(filmId, userId);
+
+        Feed createdFeed = Feed.builder()
+                .timestamp(Instant.now().toEpochMilli())
+                .feedType(LIKE)
+                .feedOperation(ADD)
+                .userId(userId)
+                .entityId(filmId)
+                .build();
+
+        feedRepository.create(createdFeed);
     }
 
     public void removeLike(int filmId, int userId) {
         validateLikeFilmData(filmId, userId);
         filmRepository.removeLike(filmId, userId);
+
+        Feed createdFeed = Feed.builder()
+                .timestamp(Instant.now().toEpochMilli())
+                .feedType(LIKE)
+                .feedOperation(REMOVE)
+                .userId(userId)
+                .entityId(filmId)
+                .build();
+
+        feedRepository.create(createdFeed);
     }
 
     public Collection<Film> findByDirectorId(int directorId, String sortBy) {
