@@ -19,7 +19,6 @@ public class ReviewController {
     private final ReviewService reviewService;
 
     @PostMapping
-    @Validated({Marker.OnCreate.class})
     public Review create(@Valid @RequestBody Review review) {
         return reviewService.create(review);
     }

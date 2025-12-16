@@ -26,7 +26,7 @@ public class Review {
     @NotNull
     private Integer filmId;
 
-    @PositiveOrZero
+    @PositiveOrZero(message = "Рейтинг не может быть отрицательный числом")
     private int useful;
 }
 

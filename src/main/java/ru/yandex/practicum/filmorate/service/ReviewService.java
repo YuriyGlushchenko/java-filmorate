@@ -1,5 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
+import ru.yandex.practicum.filmorate.dal.FilmStorage;
+import ru.yandex.practicum.filmorate.dal.UserStorage;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.dal.ReviewStorage;
 import ru.yandex.practicum.filmorate.exceptions.exceptions.NotFoundException;
@@ -17,8 +19,8 @@ import java.util.Collection;
 @RequiredArgsConstructor
 public class ReviewService {
     private final ReviewStorage reviewRepository;
-    private final UserService userService;
-    private final FilmService filmService;
+    private final FilmStorage filmRepository;
+    private final UserStorage userRepository;
 
     public Review create(Review review) {
         checker(review.getFilmId(), review.getUserId());
@@ -66,10 +68,10 @@ public class ReviewService {
     }
 
     private void checker(Integer filmId, Integer userId) {
-        if (filmId == null || filmService.getFilmById(filmId) == null) {
+        if (filmId == null || filmRepository.getFilmById(filmId).isEmpty()) {
             throw new NotFoundException("Не найден фильм c идентификатором " + filmId);
         }
-        if (userId == null || userService.getUserById(userId) == null) {
+        if (userId == null || userRepository.getUserById(userId).isEmpty()) {
             throw new NotFoundException("Не найден пользователь с идентификатором " + userId);
         }
     }
