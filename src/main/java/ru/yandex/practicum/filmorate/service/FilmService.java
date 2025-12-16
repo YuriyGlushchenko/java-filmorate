@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.service;
 
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 import ru.yandex.practicum.filmorate.dal.*;
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
 @Validated
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class FilmService {
     private final FilmStorage filmRepository;
     private final UserStorage userRepository;
@@ -60,6 +62,10 @@ public class FilmService {
             film.setGenres(new HashSet<>());
         } else {
             genreRepository.saveFilmGenres(film.getId(), film.getGenres());
+
+            Set<Genre> sortedGenres = new TreeSet<>(Comparator.comparing(Genre::getId)); // для кривых тестов
+            sortedGenres.addAll(newFilm.getGenres());
+            film.setGenres(sortedGenres);
         }
 
         // сохраняем все связи режиссеров с фильмом
@@ -92,6 +98,7 @@ public class FilmService {
         // сохраняем все связи режиссеров с фильмом
         if (newFilm.getDirectors() == null) {
             newFilm.setDirectors(new HashSet<>());
+            directorRepository.deleteFilmDirectors(newFilm.getId());
         } else {
             directorRepository.saveFilmDirectors(newFilm.getId(), newFilm.getDirectors());
         }
@@ -291,8 +298,12 @@ public class FilmService {
 
         // Перебираем фильмы и назначаем жанры
         for (Film film : films) {
-            Set<Genre> genres = genresByFilmId.getOrDefault(film.getId(), new HashSet<>());
-            film.setGenres(genres);
+            Set<Genre> genres = genresByFilmId.getOrDefault(film.getId(), new TreeSet<>(Comparator.comparing(Genre::getId)));
+
+            Set<Genre> sortedGenres = new TreeSet<>(Comparator.comparing(Genre::getId)); // для кривых тестов
+            sortedGenres.addAll(genres);
+            film.setGenres(sortedGenres);
+
         }
     }
 

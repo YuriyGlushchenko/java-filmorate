@@ -12,4 +12,5 @@ public class UserDTO {
     private String email;
     private String name;
     private LocalDate birthday;
+    private String login;
 }

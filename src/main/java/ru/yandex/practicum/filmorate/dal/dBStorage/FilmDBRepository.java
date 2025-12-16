@@ -6,10 +6,10 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dal.FilmStorage;
 import ru.yandex.practicum.filmorate.dal.dBStorage.mappers.FilmRowMapper;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.SortOrder;
 
-import java.util.Collection;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 @Repository("FilmDBRepository")
@@ -183,7 +183,7 @@ public class FilmDBRepository extends BaseRepository<Film> implements FilmStorag
             JOIN rating r ON r.rating_id = f.rating_id
             LEFT JOIN likes l ON l.film_id = f.film_id
             WHERE LOWER(f.film_name) LIKE LOWER(CONCAT('%', ?, '%'))
-            GROUP BY f.film_id, f.film_name, f.description, f.release_date, f.duration
+            GROUP BY f.film_id, f.film_name, f.description, f.release_date, f.duration,
                      r.rating_id, r.rating_name
             ORDER BY likes_count DESC, f.film_id
             """;
@@ -198,7 +198,7 @@ public class FilmDBRepository extends BaseRepository<Film> implements FilmStorag
             JOIN director d ON fd.director_id = d.director_id
             LEFT JOIN likes l ON l.film_id = f.film_id
             WHERE LOWER(d.director_name) LIKE LOWER(CONCAT('%', ?, '%'))
-            GROUP BY f.film_id, f.film_name, f.description, f.release_date, f.duration
+            GROUP BY f.film_id, f.film_name, f.description, f.release_date, f.duration,
                      r.rating_id, r.rating_name
             ORDER BY likes_count DESC, f.film_id
             """;
@@ -246,6 +246,12 @@ public class FilmDBRepository extends BaseRepository<Film> implements FilmStorag
     @Override
     public Film update(Film film) {
         update(UPDATE_QUERY, film.getName(), film.getDescription(), java.sql.Date.valueOf(film.getReleaseDate()), film.getDuration(), film.getMpa().getId(), film.getId());
+
+        Set<Genre> genres = film.getGenres();  // для кривых тестов
+        Set<Genre> sortedGenres = new TreeSet<>(Comparator.comparing(Genre::getId));
+        sortedGenres.addAll(genres);
+        film.setGenres(sortedGenres);
+
         return film;
     }
 

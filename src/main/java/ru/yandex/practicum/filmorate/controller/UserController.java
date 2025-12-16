@@ -68,7 +68,14 @@ public class UserController {
 
     @GetMapping("/{id}/recommendations")
     public Collection<Film> getRecommendations(@PathVariable("id") int userId) {
+        Collection<Film> recomendations = userService.getRecommendations(userId);
+
+        if(recomendations.isEmpty()){
+            return null;
+        }
         return userService.getRecommendations(userId);
+
+
     }
 
 }
