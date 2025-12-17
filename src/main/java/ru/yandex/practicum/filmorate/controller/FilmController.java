@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.validators.Marker;
 
 import java.util.Collection;
+import java.util.List;
 
 @RestController
 @RequestMapping("/films")
@@ -72,6 +73,14 @@ public class FilmController {
             @RequestParam(name = "userId") Integer userId,
             @RequestParam(name = "friendId") Integer friendId) {
         return filmService.getCommonFilms(userId, friendId);
+    }
+
+    @GetMapping("/search")
+    public Collection<Film> searchFilms(
+            @RequestParam String query,
+            @RequestParam(defaultValue = "title,director") List<String> by) {
+
+        return filmService.searchFilms(query, by);
     }
 
 }
