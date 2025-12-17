@@ -86,16 +86,16 @@ create TABLE IF NOT EXISTS reviews (
     FOREIGN KEY (film_id) REFERENCES film(film_id) ON delete CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS review_likes (
+create TABLE IF NOT EXISTS review_likes (
     review_id INTEGER NOT NULL,
     user_id INTEGER NOT NULL,
     is_positive BOOLEAN NOT NULL,
-    FOREIGN KEY (review_id) REFERENCES reviews(review_id) ON DELETE CASCADE,
-    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (review_id) REFERENCES reviews(review_id) ON delete CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON delete CASCADE,
     PRIMARY KEY (review_id, user_id)
 );
 
-CREATE TABLE IF NOT EXISTS feeds
+create TABLE IF NOT EXISTS feeds
 (
     event_id SERIAL PRIMARY KEY,
     create_time BIGINT NOT NULL,
@@ -103,5 +103,5 @@ CREATE TABLE IF NOT EXISTS feeds
     operation VARCHAR(50) NOT NULL,
     user_id INTEGER NOT NULL,
     entity_id INTEGER NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON delete CASCADE
 )
