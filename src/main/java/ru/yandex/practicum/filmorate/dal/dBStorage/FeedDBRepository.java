@@ -1,12 +1,11 @@
 package ru.yandex.practicum.filmorate.dal.dBStorage;
 
-import ru.yandex.practicum.filmorate.model.Feed;
-import ru.yandex.practicum.filmorate.dal.FeedStorage;
-
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Repository;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.dal.FeedStorage;
+import ru.yandex.practicum.filmorate.model.Feed;
 
 import java.util.Collection;
 

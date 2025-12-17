@@ -1,11 +1,11 @@
 package ru.yandex.practicum.filmorate.dal.dBStorage.mappers;
 
-import ru.yandex.practicum.filmorate.model.Feed;
-import ru.yandex.practicum.filmorate.model.FeedType;
-import ru.yandex.practicum.filmorate.model.FeedOperation;
-
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.model.Feed;
+import ru.yandex.practicum.filmorate.model.FeedOperation;
+import ru.yandex.practicum.filmorate.model.FeedType;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 

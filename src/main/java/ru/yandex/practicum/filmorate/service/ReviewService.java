@@ -1,22 +1,22 @@
 package ru.yandex.practicum.filmorate.service;
 
-import ru.yandex.practicum.filmorate.dal.FeedStorage;
-import ru.yandex.practicum.filmorate.dal.FilmStorage;
-import ru.yandex.practicum.filmorate.dal.UserStorage;
-import ru.yandex.practicum.filmorate.model.Feed;
-import ru.yandex.practicum.filmorate.model.Review;
-import ru.yandex.practicum.filmorate.dal.ReviewStorage;
-import static ru.yandex.practicum.filmorate.model.FeedType.*;
-import static ru.yandex.practicum.filmorate.model.FeedOperation.*;
-import ru.yandex.practicum.filmorate.exceptions.exceptions.NotFoundException;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
+import ru.yandex.practicum.filmorate.dal.FeedStorage;
+import ru.yandex.practicum.filmorate.dal.FilmStorage;
+import ru.yandex.practicum.filmorate.dal.ReviewStorage;
+import ru.yandex.practicum.filmorate.dal.UserStorage;
+import ru.yandex.practicum.filmorate.exceptions.exceptions.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Feed;
+import ru.yandex.practicum.filmorate.model.Review;
 
 import java.time.Instant;
 import java.util.Collection;
+
+import static ru.yandex.practicum.filmorate.model.FeedOperation.*;
+import static ru.yandex.practicum.filmorate.model.FeedType.REVIEW;
 
 @Slf4j
 @Validated

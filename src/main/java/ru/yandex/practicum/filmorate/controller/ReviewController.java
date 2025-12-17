@@ -1,13 +1,11 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.service.ReviewService;
-
-import jakarta.validation.Valid;
-import org.springframework.validation.annotation.Validated;
-import lombok.RequiredArgsConstructor;
-
-import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.validators.Marker;
 
 import java.util.Collection;

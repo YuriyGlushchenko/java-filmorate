@@ -8,17 +8,17 @@ import ru.yandex.practicum.filmorate.dal.*;
 import ru.yandex.practicum.filmorate.exceptions.exceptions.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.exceptions.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.exceptions.ParameterNotValidException;
+import ru.yandex.practicum.filmorate.exceptions.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.*;
-import static ru.yandex.practicum.filmorate.model.FeedType.*;
-import static ru.yandex.practicum.filmorate.model.FeedOperation.*;
 
 import java.time.Instant;
 import java.time.LocalDate;
-
-import ru.yandex.practicum.filmorate.exceptions.exceptions.ValidationException;
-
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static ru.yandex.practicum.filmorate.model.FeedOperation.ADD;
+import static ru.yandex.practicum.filmorate.model.FeedOperation.REMOVE;
+import static ru.yandex.practicum.filmorate.model.FeedType.LIKE;
 
 @Validated
 @Service
