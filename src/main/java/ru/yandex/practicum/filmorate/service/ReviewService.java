@@ -1,22 +1,22 @@
 package ru.yandex.practicum.filmorate.service;
 
-import ru.yandex.practicum.filmorate.dal.FeedStorage;
-import ru.yandex.practicum.filmorate.dal.FilmStorage;
-import ru.yandex.practicum.filmorate.dal.UserStorage;
-import ru.yandex.practicum.filmorate.model.Feed;
-import ru.yandex.practicum.filmorate.model.Review;
-import ru.yandex.practicum.filmorate.dal.ReviewStorage;
-import static ru.yandex.practicum.filmorate.model.FeedType.*;
-import static ru.yandex.practicum.filmorate.model.FeedOperation.*;
-import ru.yandex.practicum.filmorate.exceptions.exceptions.NotFoundException;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
+import ru.yandex.practicum.filmorate.dal.FeedStorage;
+import ru.yandex.practicum.filmorate.dal.FilmStorage;
+import ru.yandex.practicum.filmorate.dal.ReviewStorage;
+import ru.yandex.practicum.filmorate.dal.UserStorage;
+import ru.yandex.practicum.filmorate.exceptions.exceptions.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Feed;
+import ru.yandex.practicum.filmorate.model.Review;
 
 import java.time.Instant;
 import java.util.Collection;
+
+import static ru.yandex.practicum.filmorate.model.FeedOperation.*;
+import static ru.yandex.practicum.filmorate.model.FeedType.REVIEW;
 
 @Slf4j
 @Validated
@@ -46,12 +46,12 @@ public class ReviewService {
     }
 
     public Review update(Review review) {
-        checker(review.getFilmId(), review.getUserId());
-        reviewRepository.getReviewById(review.getReviewId())
+        Review uploadedReview = reviewRepository.getReviewById(review.getReviewId())
                 .orElseThrow(() -> new NotFoundException("Данные не обновлены. Отзыв с id=" + review.getReviewId() + " не найден"));
+        review.setFilmId(uploadedReview.getFilmId());
+        review.setUserId(uploadedReview.getUserId());
 
         Review updatedReview = reviewRepository.update(review);
-
         Feed createdFeed = Feed.builder()
                 .timestamp(Instant.now().toEpochMilli())
                 .feedType(REVIEW)
@@ -60,6 +60,7 @@ public class ReviewService {
                 .entityId(review.getReviewId())
                 .build();
         feedRepository.create(createdFeed);
+
 
         return updatedReview;
     }
@@ -86,7 +87,7 @@ public class ReviewService {
     }
 
     public Collection<Review> findAll(Integer filmId, int count) {
-        if (filmId == null)
+        if (filmId == 0)
             return reviewRepository.findAll(count);
         return reviewRepository.getAllReviewById(filmId, count);
     }

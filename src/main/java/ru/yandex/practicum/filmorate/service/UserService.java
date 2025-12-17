@@ -13,13 +13,15 @@ import ru.yandex.practicum.filmorate.mapper.UserMapper;
 import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
-import static ru.yandex.practicum.filmorate.model.FeedType.*;
-import static ru.yandex.practicum.filmorate.model.FeedOperation.*;
 
 import java.time.Instant;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static ru.yandex.practicum.filmorate.model.FeedOperation.ADD;
+import static ru.yandex.practicum.filmorate.model.FeedOperation.REMOVE;
+import static ru.yandex.practicum.filmorate.model.FeedType.FRIEND;
 
 @Slf4j
 @Service
@@ -27,7 +29,7 @@ import java.util.stream.Collectors;
 public class UserService {
     private final UserStorage userRepository;
     private final FriendshipService friendshipService;
-    private final FilmStorage filmRepository;
+    private final FilmService filmService;
     private final FeedStorage feedRepository;
 
     public Collection<UserDTO> getAllUsers() {
@@ -125,7 +127,7 @@ public class UserService {
     public Collection<Film> getRecommendations(int userId) {
         validateUser(userId);
 
-        return filmRepository.getRecomendations(userId);
+        return filmService.getRecommendations(userId);
     }
 
     private User validateUser(int userId) {

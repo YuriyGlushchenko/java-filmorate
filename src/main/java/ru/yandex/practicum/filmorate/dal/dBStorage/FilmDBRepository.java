@@ -6,10 +6,10 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dal.FilmStorage;
 import ru.yandex.practicum.filmorate.dal.dBStorage.mappers.FilmRowMapper;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.SortOrder;
 
-import java.util.Collection;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 @Repository("FilmDBRepository")
@@ -46,7 +46,11 @@ public class FilmDBRepository extends BaseRepository<Film> implements FilmStorag
             WHERE film_id = ?
             """;
 
-    private static final String ADD_LIKE_QUERY = "INSERT INTO likes (film_id, user_id) VALUES (?, ?)";
+    private static final String ADD_LIKE_QUERY = """
+            MERGE INTO likes (film_id, user_id)
+            KEY (film_id, user_id)
+            VALUES (?, ?)
+            """;
 
     private static final String REMOVE_LIKE_QUERY = "DELETE FROM likes WHERE film_id = ? AND user_id = ?;";
 
@@ -246,6 +250,12 @@ public class FilmDBRepository extends BaseRepository<Film> implements FilmStorag
     @Override
     public Film update(Film film) {
         update(UPDATE_QUERY, film.getName(), film.getDescription(), java.sql.Date.valueOf(film.getReleaseDate()), film.getDuration(), film.getMpa().getId(), film.getId());
+
+        Set<Genre> genres = film.getGenres();  // для кривых тестов
+        Set<Genre> sortedGenres = new TreeSet<>(Comparator.comparing(Genre::getId));
+        sortedGenres.addAll(genres);
+        film.setGenres(sortedGenres);
+
         return film;
     }
 

@@ -1,17 +1,16 @@
 package ru.yandex.practicum.filmorate.dal.dBStorage;
 
-import ru.yandex.practicum.filmorate.dal.ReviewStorage;
-import ru.yandex.practicum.filmorate.model.Review;
-
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Repository;
-
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.dal.ReviewStorage;
+import ru.yandex.practicum.filmorate.model.Review;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Optional;
 
 @Slf4j
 @Component
@@ -38,7 +37,7 @@ public class ReviewDBRepository extends BaseRepository<Review> implements Review
 
     private static final String UPDATE_USEFUL_REVIEW =
             "UPDATE reviews SET useful = (SELECT SUM(CASE WHEN is_positive = TRUE THEN 1 ELSE -1 END) useful " +
-                "FROM review_likes WHERE review_id =?) WHERE review_id = ?";
+                    "FROM review_likes WHERE review_id =?) WHERE review_id = ?";
 
     public ReviewDBRepository(JdbcTemplate jdbc, RowMapper<Review> mapper) {
         super(jdbc, mapper);

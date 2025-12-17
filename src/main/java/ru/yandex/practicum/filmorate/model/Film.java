@@ -8,8 +8,10 @@ import ru.yandex.practicum.filmorate.validators.After;
 import ru.yandex.practicum.filmorate.validators.Marker;
 
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeSet;
 
 @Data
 @Builder(toBuilder = true)
@@ -39,7 +41,7 @@ public class Film {
     private MpaRating mpa;
 
     @Builder.Default
-    private Set<Genre> genres = new HashSet<>();
+    private Set<Genre> genres = new TreeSet<>(Comparator.comparing(Genre::getId));
 
     @Builder.Default
     private Set<Director> directors = new HashSet<>();
