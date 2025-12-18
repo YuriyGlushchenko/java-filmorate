@@ -92,17 +92,17 @@ public class ReviewDBRepository extends BaseRepository<Review> implements Review
 
     @Override
     public void addReaction(Integer reviewId, Integer userId, Boolean isPositive) {
-        String merge_reaction_query = "MERGE INTO review_likes (review_id, user_id, is_positive) VALUES (?, ?, ?)";
+        String mergeReactionQuery = "MERGE INTO review_likes (review_id, user_id, is_positive) VALUES (?, ?, ?)";
 
-        update(merge_reaction_query, reviewId, userId, isPositive);
+        update(mergeReactionQuery, reviewId, userId, isPositive);
         updateUseful(reviewId);
     }
 
     @Override
     public void removeReaction(Integer reviewId, Integer userId) {
-        String delete_reaction_query = "DELETE FROM review_likes WHERE review_id = ? AND user_id = ?";
+        String deleteReactionQuery = "DELETE FROM review_likes WHERE review_id = ? AND user_id = ?";
 
-        delete(delete_reaction_query, reviewId, userId);
+        delete(deleteReactionQuery, reviewId, userId);
         updateUseful(reviewId);
     }
 }
