@@ -25,10 +25,7 @@ public class DirectorService {
     }
 
     public Director create(Director director) {
-        // Можно добавить проверку, что в базе еще нет режиссёра с таким ФИО, но по ТЗ не требуется и с одним полем name нет смысла.
-
         return directorRepository.create(director);
-
     }
 
     public Director update(Director newDirector) {

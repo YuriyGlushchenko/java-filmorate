@@ -7,12 +7,9 @@ import org.springframework.validation.annotation.Validated;
 import ru.yandex.practicum.filmorate.dal.*;
 import ru.yandex.practicum.filmorate.exceptions.exceptions.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.exceptions.exceptions.NotFoundException;
-import ru.yandex.practicum.filmorate.exceptions.exceptions.ParameterNotValidException;
-import ru.yandex.practicum.filmorate.exceptions.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.*;
 
 import java.time.Instant;
-import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -146,20 +143,6 @@ public class FilmService {
     }
 
     public Collection<Film> findMostPopularFilms(int count, Integer genreId, Integer year) {
-        // Валидация count
-        if (count <= 0) {
-            throw new ValidationException("count", count, "Count должен быть положительным числом");
-        }
-
-        // Валидация года
-        if (year != null) {
-            int currentYear = LocalDate.now().getYear();
-            if (year < 1895 || year > currentYear) {
-                throw new ValidationException("year", year,
-                        "Год должен быть между 1895 и " + currentYear);
-            }
-        }
-
         // Валидация жанра (если передан)
         if (genreId != null) {
             genreRepository.getGenreById(genreId)
@@ -206,11 +189,7 @@ public class FilmService {
         feedRepository.create(createdFeed);
     }
 
-    public Collection<Film> findByDirectorId(int directorId, String sortBy) {
-        SortOrder sortOrder = SortOrder.from(sortBy);
-        if (sortOrder == null) {
-            throw new ParameterNotValidException("Некорректный параметр запроса. Получено:" + sortBy + " Допустимо: year или likes");
-        }
+    public Collection<Film> findByDirectorId(int directorId, SortOrder sortOrder) {
 
         // Сначала проверяем что режиссер вообще существует
         directorRepository.getDirectorById(directorId)
@@ -333,21 +312,12 @@ public class FilmService {
                 .orElseThrow(() -> new NotFoundException("Пользователь с id=" + userId + " не найден"));
     }
 
-    public Collection<Film> searchFilms(String query, List<String> by) {
+    public Collection<Film> searchFilms(String query, SearchBy searchBy) {
         if (query == null || query.isBlank()) {
             return List.of();
         }
 
-        // Определяем что искать
-        boolean searchByTitle = by.stream().anyMatch("title"::equalsIgnoreCase);
-        boolean searchByDirector = by.stream().anyMatch("director"::equalsIgnoreCase);
-
-        // Если ничего не выбрано, то поиск повсюду
-        if (!searchByTitle && !searchByDirector) {
-            searchByTitle = searchByDirector = true;
-        }
-
-        Collection<Film> films = filmRepository.searchFilms(query.trim(), searchByTitle, searchByDirector);
+        Collection<Film> films = filmRepository.searchFilms(query.trim(), searchBy);
         loadGenresForFilms(films);
         loadDirectorsForFilms(films);
 

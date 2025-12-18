@@ -7,6 +7,7 @@ import ru.yandex.practicum.filmorate.dal.FilmStorage;
 import ru.yandex.practicum.filmorate.dal.dBStorage.mappers.FilmRowMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.SearchBy;
 import ru.yandex.practicum.filmorate.model.SortOrder;
 
 import java.util.*;
@@ -235,7 +236,12 @@ public class FilmDBRepository extends BaseRepository<Film> implements FilmStorag
     @Override
     public Film create(Film film) {
 
-        int id = insert(INSERT_QUERY, film.getName(), film.getDescription(), java.sql.Date.valueOf(film.getReleaseDate()), film.getDuration(), film.getMpa().getId());
+        int id = insert(INSERT_QUERY,
+                film.getName(),
+                film.getDescription(),
+                java.sql.Date.valueOf(film.getReleaseDate()),
+                film.getDuration(),
+                film.getMpa().getId());
 
         film.setId(id);
         return film;
@@ -249,7 +255,13 @@ public class FilmDBRepository extends BaseRepository<Film> implements FilmStorag
 
     @Override
     public Film update(Film film) {
-        update(UPDATE_QUERY, film.getName(), film.getDescription(), java.sql.Date.valueOf(film.getReleaseDate()), film.getDuration(), film.getMpa().getId(), film.getId());
+        update(UPDATE_QUERY,
+                film.getName(),
+                film.getDescription(),
+                java.sql.Date.valueOf(film.getReleaseDate()),
+                film.getDuration(),
+                film.getMpa().getId(),
+                film.getId());
 
         Set<Genre> genres = film.getGenres();  // для кривых тестов
         Set<Genre> sortedGenres = new TreeSet<>(Comparator.comparing(Genre::getId));
@@ -300,19 +312,12 @@ public class FilmDBRepository extends BaseRepository<Film> implements FilmStorag
     }
 
     @Override
-    public Collection<Film> searchFilms(String query, boolean searchByTitle, boolean searchByDirector) {
-        if (!searchByTitle && !searchByDirector) {
-            // Если не указано где искать, ищем везде
-            return findMany(SEARCH_BY_TITLE_AND_DIRECTOR_QUERY, query, query);
-        } else if (searchByTitle && searchByDirector) {
-            // Ищем и по названию, и по режиссёру
-            return findMany(SEARCH_BY_TITLE_AND_DIRECTOR_QUERY, query, query);
-        } else if (searchByTitle) {
-            // Только по названию
-            return findMany(SEARCH_BY_TITLE_QUERY, query);
-        } else {
-            // Только по режиссёру
-            return findMany(SEARCH_BY_DIRECTOR_QUERY, query);
-        }
+    public Collection<Film> searchFilms(String query, SearchBy searchBy) {
+        return switch (searchBy) {
+            case TITLE -> findMany(SEARCH_BY_TITLE_QUERY, query);
+            case DIRECTOR -> findMany(SEARCH_BY_DIRECTOR_QUERY, query);
+            case DIRECTOR_AND_TITLE -> findMany(SEARCH_BY_TITLE_AND_DIRECTOR_QUERY, query, query);
+        };
+
     }
 }

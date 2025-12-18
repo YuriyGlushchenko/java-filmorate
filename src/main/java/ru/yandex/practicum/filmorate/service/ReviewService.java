@@ -92,20 +92,12 @@ public class ReviewService {
         return reviewRepository.getAllReviewById(filmId, count);
     }
 
-    public void addLikeToReview(Integer reviewId, Integer userId) {
-        reviewRepository.addLikeToReview(reviewId, userId);
+    public void addReaction(Integer reviewId, Integer userId, Boolean isPositive) {
+        reviewRepository.addReaction(reviewId, userId, isPositive);
     }
 
-    public void addDislikeToReview(Integer reviewId, Integer userId) {
-        reviewRepository.addDislikeToReview(reviewId, userId);
-    }
-
-    public void deleteLikeFromReview(Integer reviewId, Integer userId) {
-        reviewRepository.deleteLikeFromReview(reviewId, userId);
-    }
-
-    public void deleteDislikeFromReview(Integer reviewId, Integer userId) {
-        reviewRepository.deleteDislikeFromReview(reviewId, userId);
+    public void removeReaction(Integer reviewId, Integer userId) {
+        reviewRepository.removeReaction(reviewId, userId);
     }
 
     private void checker(Integer filmId, Integer userId) {

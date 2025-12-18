@@ -1,15 +1,17 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.SearchBy;
+import ru.yandex.practicum.filmorate.model.SortOrder;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.validators.Marker;
 
 import java.util.Collection;
-import java.util.List;
 
 @RestController
 @RequestMapping("/films")
@@ -57,14 +59,18 @@ public class FilmController {
 
     // Добавила параметры
     @GetMapping("/popular")
-    public Collection<Film> findMostPopularFilms(@RequestParam(defaultValue = "1000") int count, @RequestParam(required = false) Integer genreId, @RequestParam(required = false) Integer year) {
+    public Collection<Film> findMostPopularFilms(
+            @RequestParam(defaultValue = "10") @Positive int count,
+            @RequestParam(required = false) Integer genreId,
+            @RequestParam(required = false) Integer year) {
 
         return filmService.findMostPopularFilms(count, genreId, year);
     }
 
     @GetMapping("/director/{directorId}")
-    public Collection<Film> findByDirectorId(@RequestParam(defaultValue = "year") String sortBy,
-                                             @PathVariable int directorId) {
+    public Collection<Film> findByDirectorId(
+            @RequestParam(required = false) SortOrder sortBy,
+            @PathVariable int directorId) {
         return filmService.findByDirectorId(directorId, sortBy);
     }
 
@@ -78,8 +84,7 @@ public class FilmController {
     @GetMapping("/search")
     public Collection<Film> searchFilms(
             @RequestParam String query,
-            @RequestParam(defaultValue = "title,director") List<String> by) {
-
+            @RequestParam(required = false, defaultValue = "director,title") SearchBy by) {
         return filmService.searchFilms(query, by);
     }
 
