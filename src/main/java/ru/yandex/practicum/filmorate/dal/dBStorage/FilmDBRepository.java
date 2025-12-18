@@ -235,7 +235,12 @@ public class FilmDBRepository extends BaseRepository<Film> implements FilmStorag
     @Override
     public Film create(Film film) {
 
-        int id = insert(INSERT_QUERY, film.getName(), film.getDescription(), java.sql.Date.valueOf(film.getReleaseDate()), film.getDuration(), film.getMpa().getId());
+        int id = insert(INSERT_QUERY,
+                film.getName(),
+                film.getDescription(),
+                java.sql.Date.valueOf(film.getReleaseDate()),
+                film.getDuration(),
+                film.getMpa().getId());
 
         film.setId(id);
         return film;
@@ -249,7 +254,13 @@ public class FilmDBRepository extends BaseRepository<Film> implements FilmStorag
 
     @Override
     public Film update(Film film) {
-        update(UPDATE_QUERY, film.getName(), film.getDescription(), java.sql.Date.valueOf(film.getReleaseDate()), film.getDuration(), film.getMpa().getId(), film.getId());
+        update(UPDATE_QUERY,
+                film.getName(),
+                film.getDescription(),
+                java.sql.Date.valueOf(film.getReleaseDate()),
+                film.getDuration(),
+                film.getMpa().getId(),
+                film.getId());
 
         Set<Genre> genres = film.getGenres();  // для кривых тестов
         Set<Genre> sortedGenres = new TreeSet<>(Comparator.comparing(Genre::getId));

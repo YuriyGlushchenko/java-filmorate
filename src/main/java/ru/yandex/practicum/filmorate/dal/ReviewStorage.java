@@ -23,11 +23,7 @@ public interface ReviewStorage {
 
     void updateUseful(int reviewId);
 
-    void addLikeToReview(Integer reviewId, Integer userId);
+    void addReaction(Integer reviewId, Integer userId, Boolean isPositive);
 
-    void deleteLikeFromReview(Integer reviewId, Integer userId);
-
-    void addDislikeToReview(Integer reviewId, Integer userId);
-
-    void deleteDislikeFromReview(Integer reviewId, Integer userId);
+    void removeReaction(Integer reviewId, Integer userId);
 }

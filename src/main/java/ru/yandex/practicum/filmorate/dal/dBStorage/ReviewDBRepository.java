@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.dal.dBStorage;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
@@ -29,11 +28,6 @@ public class ReviewDBRepository extends BaseRepository<Review> implements Review
     private static final String UPDATE_QUERY = "UPDATE reviews SET content = ?, is_positive = ?WHERE review_id = ?";
 
     private static final String DELETE_REVIEW_QUERY = "DELETE FROM reviews WHERE review_id = ?";
-
-    private static final String MERGE_LIKE_REVIEW_QUERY =
-            "MERGE INTO review_likes (review_id, user_id, is_positive) VALUES (?, ?, ?)";
-
-    private static final String DELETE_REVIEW_LIKE_QUERY = "DELETE FROM review_likes WHERE review_id=? AND user_id=?";
 
     private static final String UPDATE_USEFUL_REVIEW =
             "UPDATE reviews SET useful = (SELECT SUM(CASE WHEN is_positive = TRUE THEN 1 ELSE -1 END) useful " +
@@ -85,15 +79,11 @@ public class ReviewDBRepository extends BaseRepository<Review> implements Review
 
     @Override
     public boolean isNotExists(int id) {
-        log.debug("isNotExists({})", id);
-        try {
-            getReviewById(id);
-            log.trace("Информация по отзыву с идентификатором {} найдена", id);
-            return false;
-        } catch (EmptyResultDataAccessException exception) {
-            log.trace("Нет информации по отзыву с идентификатором {}", id);
-            return true;
-        }
+        String checkQuery = "SELECT EXISTS(SELECT 1 FROM reviews WHERE review_id = ?)";
+
+        Boolean exists = jdbc.queryForObject(checkQuery, Boolean.class, id);
+
+        return exists == null || !exists;
     }
 
     public void updateUseful(int reviewId) {
@@ -101,26 +91,18 @@ public class ReviewDBRepository extends BaseRepository<Review> implements Review
     }
 
     @Override
-    public void addLikeToReview(Integer reviewId, Integer userId) {
-        update(MERGE_LIKE_REVIEW_QUERY, reviewId, userId, Boolean.TRUE);
+    public void addReaction(Integer reviewId, Integer userId, Boolean isPositive) {
+        String merge_reaction_query = "MERGE INTO review_likes (review_id, user_id, is_positive) VALUES (?, ?, ?)";
+
+        update(merge_reaction_query, reviewId, userId, isPositive);
         updateUseful(reviewId);
     }
 
     @Override
-    public void deleteLikeFromReview(Integer reviewId, Integer userId) {
-        delete(DELETE_REVIEW_LIKE_QUERY, reviewId, userId);
-        updateUseful(reviewId);
-    }
+    public void removeReaction(Integer reviewId, Integer userId) {
+        String delete_reaction_query = "DELETE FROM review_likes WHERE review_id = ? AND user_id = ?";
 
-    @Override
-    public void addDislikeToReview(Integer reviewId, Integer userId) {
-        update(MERGE_LIKE_REVIEW_QUERY, reviewId, userId, Boolean.FALSE);
-        updateUseful(reviewId);
-    }
-
-    @Override
-    public void deleteDislikeFromReview(Integer reviewId, Integer userId) {
-        delete(DELETE_REVIEW_LIKE_QUERY, reviewId, userId);
+        delete(delete_reaction_query, reviewId, userId);
         updateUseful(reviewId);
     }
 }

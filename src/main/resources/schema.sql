@@ -16,7 +16,7 @@ create TABLE IF NOT EXISTS genre (
 
 create TABLE IF NOT EXISTS director (
     director_id SERIAL PRIMARY KEY,
-    director_name VARCHAR(255) NOT NULL
+    director_name VARCHAR(255) NOT NULL UNIQUE
 );
 
 -- Затем создаем основную таблицу users
