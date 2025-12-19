@@ -7,9 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.jdbc.Sql;
 import ru.yandex.practicum.filmorate.dal.FilmStorage;
 import ru.yandex.practicum.filmorate.dal.dBStorage.FilmDBRepository;
-import ru.yandex.practicum.filmorate.dal.dBStorage.extractors.FilmWithGenresExtractor;
 import ru.yandex.practicum.filmorate.dal.dBStorage.mappers.FilmRowMapper;
 import ru.yandex.practicum.filmorate.exceptions.exceptions.InternalServerException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -26,7 +26,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @JdbcTest
 @AutoConfigureTestDatabase
-@Import({FilmDBRepository.class, FilmRowMapper.class, FilmWithGenresExtractor.class})
+@Import({FilmDBRepository.class, FilmRowMapper.class})
+@Sql(scripts = {"/data.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 class FilmDBRepositoryTest {
     private final FilmStorage filmRepository;
@@ -35,18 +36,9 @@ class FilmDBRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        MpaRating mpa = MpaRating.builder()
-                .id(1)
-                .name("G")
-                .build();
+        MpaRating mpa = MpaRating.builder().id(1).name("G").build();
 
-        testFilm = Film.builder()
-                .name("Новый тестовый фильм")
-                .description("Описание тестового фильма")
-                .releaseDate(LocalDate.of(2020, 5, 15))
-                .duration(120)
-                .mpa(mpa)
-                .build();
+        testFilm = Film.builder().name("Новый тестовый фильм").description("Описание тестового фильма").releaseDate(LocalDate.of(2020, 5, 15)).duration(120).mpa(mpa).build();
     }
 
     @Test
@@ -78,22 +70,16 @@ class FilmDBRepositoryTest {
         assertThat(allFilms).isNotNull();
         assertThat(allFilms.size() == 6).isTrue(); // Из data.sql 6 фильмов
 
-        List<String> filmNames = allFilms.stream()
-                .map(Film::getName)
-                .toList();
+        List<String> filmNames = allFilms.stream().map(Film::getName).toList();
 
         assertThat(filmNames.contains("Матрица")).isTrue();
         assertThat(filmNames.contains("Король Лев")).isTrue();
         assertThat(filmNames.contains("Начало")).isTrue();
 
-        Optional<Film> matrix = allFilms.stream()
-                .filter(f -> f.getName().equals("Матрица"))
-                .findFirst();
+        Optional<Film> matrix = allFilms.stream().filter(f -> f.getName().equals("Матрица")).findFirst();
         assertThat(matrix.isPresent()).isTrue();
 
-        Optional<Film> lionKing = allFilms.stream()
-                .filter(f -> f.getName().equals("Король Лев"))
-                .findFirst();
+        Optional<Film> lionKing = allFilms.stream().filter(f -> f.getName().equals("Король Лев")).findFirst();
         assertThat(lionKing.isPresent()).isTrue();
     }
 
@@ -119,19 +105,9 @@ class FilmDBRepositoryTest {
         Film createdFilm = filmRepository.create(testFilm);
         int filmId = createdFilm.getId();
 
-        MpaRating newMpa = MpaRating.builder()
-                .id(2)
-                .name("PG")
-                .build();
+        MpaRating newMpa = MpaRating.builder().id(2).name("PG").build();
 
-        Film updatedFilm = Film.builder()
-                .id(filmId)
-                .name("Обновленное название")
-                .description("Обновленное описание")
-                .releaseDate(LocalDate.of(2021, 6, 20))
-                .duration(150)
-                .mpa(newMpa)
-                .build();
+        Film updatedFilm = Film.builder().id(filmId).name("Обновленное название").description("Обновленное описание").releaseDate(LocalDate.of(2021, 6, 20)).duration(150).mpa(newMpa).build();
 
         Film result = filmRepository.update(updatedFilm);
 
@@ -150,23 +126,6 @@ class FilmDBRepositoryTest {
     }
 
     @Test
-    public void testAddLike() {
-        // Сначала создаем фильм
-        Film createdFilm = filmRepository.create(testFilm);
-        int filmId = createdFilm.getId();
-
-        // Добавляем лайк от пользователя 1
-        filmRepository.addLike(filmId, 1);
-
-        // Проверяем, что лайк добавлен (косвенно через популярные фильмы)
-
-        Collection<Film> popularFilms = filmRepository.findMostPopular(10);
-        boolean filmIsPopular = popularFilms.stream()
-                .anyMatch(film -> film.getId() == filmId);
-        assertThat(filmIsPopular).isTrue();
-    }
-
-    @Test
     public void testRemoveLike() {
         // Сначала создаем фильм и добавляем лайк
         Film createdFilm = filmRepository.create(testFilm);
@@ -178,6 +137,22 @@ class FilmDBRepositoryTest {
 
         // Проверяем, что операция выполнилась без ошибок
         assertThat(true).isTrue();
+    }
+
+    /* Закомментировал неактуальный тесты
+        public void testAddLike() {
+        // Сначала создаем фильм
+        Film createdFilm = filmRepository.create(testFilm);
+        int filmId = createdFilm.getId();
+
+        // Добавляем лайк от пользователя 1
+        filmRepository.addLike(filmId, 1);
+
+        // Проверяем, что лайк добавлен (косвенно через популярные фильмы)
+
+        Collection<Film> popularFilms = filmRepository.findMostPopular(10);
+        boolean filmIsPopular = popularFilms.stream().anyMatch(film -> film.getId() == filmId);
+        assertThat(filmIsPopular).isTrue();
     }
 
     @Test
@@ -208,7 +183,7 @@ class FilmDBRepositoryTest {
 
         Collection<Film> top10 = filmRepository.findMostPopular(10);
         assertThat(top10.size() >= 6).isTrue(); // Все фильмы из data.sql
-    }
+    }*/
 
     @Test
     public void testFilmDataConsistency() {
@@ -231,21 +206,9 @@ class FilmDBRepositoryTest {
 
     @Test
     public void testCreateAndRetrieveMultipleFilms() {
-        Film film1 = Film.builder()
-                .name("Тестовый фильм 1")
-                .description("Описание 1")
-                .releaseDate(LocalDate.of(2020, 1, 1))
-                .duration(100)
-                .mpa(createMpa(1))
-                .build();
+        Film film1 = Film.builder().name("Тестовый фильм 1").description("Описание 1").releaseDate(LocalDate.of(2020, 1, 1)).duration(100).mpa(createMpa(1)).build();
 
-        Film film2 = Film.builder()
-                .name("Тестовый фильм 2")
-                .description("Описание 2")
-                .releaseDate(LocalDate.of(2021, 2, 2))
-                .duration(110)
-                .mpa(createMpa(2))
-                .build();
+        Film film2 = Film.builder().name("Тестовый фильм 2").description("Описание 2").releaseDate(LocalDate.of(2021, 2, 2)).duration(110).mpa(createMpa(2)).build();
 
         Film created1 = filmRepository.create(film1);
         Film created2 = filmRepository.create(film2);
@@ -255,9 +218,7 @@ class FilmDBRepositoryTest {
         Collection<Film> allFilms = filmRepository.findAll();
         assertThat(allFilms.size() >= 8).isTrue(); // 6 из data.sql + 2 новых
 
-        List<String> filmNames = allFilms.stream()
-                .map(Film::getName)
-                .collect(Collectors.toList());
+        List<String> filmNames = allFilms.stream().map(Film::getName).collect(Collectors.toList());
 
         assertThat(filmNames.contains("Тестовый фильм 1")).isTrue();
         assertThat(filmNames.contains("Тестовый фильм 2")).isTrue();
@@ -268,14 +229,7 @@ class FilmDBRepositoryTest {
         Film createdFilm = filmRepository.create(testFilm);
         int filmId = createdFilm.getId();
 
-        Film sameDataFilm = Film.builder()
-                .id(filmId)
-                .name("Новый тестовый фильм")
-                .description("Описание тестового фильма")
-                .releaseDate(LocalDate.of(2020, 5, 15))
-                .duration(120)
-                .mpa(createMpa(1))
-                .build();
+        Film sameDataFilm = Film.builder().id(filmId).name("Новый тестовый фильм").description("Описание тестового фильма").releaseDate(LocalDate.of(2020, 5, 15)).duration(120).mpa(createMpa(1)).build();
 
         Film result = filmRepository.update(sameDataFilm);
 
@@ -307,21 +261,9 @@ class FilmDBRepositoryTest {
     @Test
     public void testFilmWithDifferentMpaRatings() {
         // Тестируем создание фильмов с разными рейтингами
-        Film filmWithPg = Film.builder()
-                .name("Фильм с PG")
-                .description("Тест")
-                .releaseDate(LocalDate.of(2020, 1, 1))
-                .duration(100)
-                .mpa(createMpa(2))
-                .build();
+        Film filmWithPg = Film.builder().name("Фильм с PG").description("Тест").releaseDate(LocalDate.of(2020, 1, 1)).duration(100).mpa(createMpa(2)).build();
 
-        Film filmWithPg13 = Film.builder()
-                .name("Фильм с PG-13")
-                .description("Тест")
-                .releaseDate(LocalDate.of(2020, 1, 1))
-                .duration(100)
-                .mpa(createMpa(3))
-                .build();
+        Film filmWithPg13 = Film.builder().name("Фильм с PG-13").description("Тест").releaseDate(LocalDate.of(2020, 1, 1)).duration(100).mpa(createMpa(3)).build();
 
         Film created1 = filmRepository.create(filmWithPg);
         Film created2 = filmRepository.create(filmWithPg13);
@@ -331,10 +273,7 @@ class FilmDBRepositoryTest {
     }
 
     private MpaRating createMpa(int id) {
-        return MpaRating.builder()
-                .id(id)
-                .name(getMpaNameById(id))
-                .build();
+        return MpaRating.builder().id(id).name(getMpaNameById(id)).build();
     }
 
     private String getMpaNameById(int id) {

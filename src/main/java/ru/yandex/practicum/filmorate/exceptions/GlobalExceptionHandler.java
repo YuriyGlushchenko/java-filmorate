@@ -109,6 +109,13 @@ public class GlobalExceptionHandler {
         return new ErrorMessage("UNPROCESSABLE_ENTITY", ex.getMessage());
     }
 
+    @ExceptionHandler(ParameterNotValidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorMessage handleParameterNotValidException(ParameterNotValidException ex) {
+
+        return new ErrorMessage("BAD_REQUEST", ex.getMessage());
+    }
+
 
 }
 

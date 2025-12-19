@@ -21,7 +21,7 @@ public class GenreService {
     }
 
 
-    public Genre getFilmById(int id) {
+    public Genre getGenreById(int id) {
         return genreStorage.getGenreById(id).orElseThrow(() -> new NotFoundException("Жанр с id = " + id + " не найден"));
     }
 }

@@ -5,7 +5,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.dto.UserDTO;
+import ru.yandex.practicum.filmorate.model.Feed;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.FeedService;
 import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.validators.Marker;
 
@@ -17,12 +20,12 @@ import java.util.Collection;
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
+    private final FeedService feedService;
 
     @GetMapping
     public Collection<UserDTO> findAll() {
         return userService.getAllUsers();
     }
-
 
     @PostMapping
     @Validated({Marker.OnCreate.class})
@@ -34,6 +37,11 @@ public class UserController {
     @Validated({Marker.OnUpdate.class})
     public User update(@RequestBody @Valid User newUser) {
         return userService.update(newUser);
+    }
+
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable int id) {
+        userService.delete(id);
     }
 
     @GetMapping("/{id}")
@@ -61,4 +69,13 @@ public class UserController {
         return userService.findCommonFriends(id, otherId);
     }
 
+    @GetMapping("/{id}/recommendations")
+    public Collection<Film> getRecommendations(@PathVariable("id") int userId) {
+        return userService.getRecommendations(userId);
+    }
+
+    @GetMapping("/{id}/feed")
+    public Collection<Feed> findFeeds(@PathVariable("id") int userId) {
+        return feedService.findFeeds(userId);
+    }
 }

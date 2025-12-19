@@ -1,38 +1,35 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.dal.FriendshipStorage;
+import ru.yandex.practicum.filmorate.dal.FeedStorage;
 import ru.yandex.practicum.filmorate.dal.UserStorage;
 import ru.yandex.practicum.filmorate.dto.UserDTO;
 import ru.yandex.practicum.filmorate.exceptions.exceptions.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exceptions.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
+import ru.yandex.practicum.filmorate.model.Feed;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 
+import java.time.Instant;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static ru.yandex.practicum.filmorate.model.FeedOperation.ADD;
+import static ru.yandex.practicum.filmorate.model.FeedOperation.REMOVE;
+import static ru.yandex.practicum.filmorate.model.FeedType.FRIEND;
+
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class UserService {
     private final UserStorage userRepository;
-    private final FriendshipStorage friendshipRepository;
     private final FriendshipService friendshipService;
-
-    // Вместо @Qualifier и хардкода выбираем конкретную реализацию бинов в файле настроек. Используется SpEL.
-    // *{} - Spring Expression Language, внутри @имя_бина, ${} - значение из application.yml.
-    @Autowired
-    public UserService(@Value("#{@${filmorate-app.storage.user-repository}}") UserStorage userRepository,
-                       FriendshipStorage friendshipRepository,
-                       FriendshipService friendshipService) {
-        this.userRepository = userRepository;
-        this.friendshipRepository = friendshipRepository;
-        this.friendshipService = friendshipService;
-    }
+    private final FilmService filmService;
+    private final FeedStorage feedRepository;
 
     public Collection<UserDTO> getAllUsers() {
         return userRepository.getAllUsers().stream()
@@ -63,8 +60,7 @@ public class UserService {
     }
 
     public User update(User updateUser) {
-        User user = userRepository.getUserById(updateUser.getId())
-                .orElseThrow(() -> new NotFoundException("Данные не обновлены. Пользователь с id=" + updateUser.getId() + " не найден"));
+        User user = validateUser(updateUser.getId());
 
         Optional<User> alreadyExistUser = userRepository.findDuplicateDataUser(updateUser.getEmail(), updateUser.getLogin());
 
@@ -81,17 +77,42 @@ public class UserService {
         return userRepository.update(updateUser);
     }
 
-    public User getUserById(int id) {
-        return userRepository.getUserById(id)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id = " + id + " не найден"));
+    public void delete(int userId) {
+        validateUser(userId);
+
+        userRepository.delete(userId);
+    }
+
+    public User getUserById(int userId) {
+        return validateUser(userId);
     }
 
     public void addToFriends(int userId, int friendId) {
         friendshipService.addToFriends(userId, friendId);
+
+        Feed createdFeed = Feed.builder()
+                .timestamp(Instant.now().toEpochMilli())
+                .feedType(FRIEND)
+                .feedOperation(ADD)
+                .userId(userId)
+                .entityId(friendId)
+                .build();
+
+        feedRepository.create(createdFeed);
     }
 
     public void removeFromFriends(int userId, int friendId) {
         friendshipService.removeFromFriends(userId, friendId);
+
+        Feed createdFeed = Feed.builder()
+                .timestamp(Instant.now().toEpochMilli())
+                .feedType(FRIEND)
+                .feedOperation(REMOVE)
+                .userId(userId)
+                .entityId(friendId)
+                .build();
+
+        feedRepository.create(createdFeed);
     }
 
     public Collection<UserDTO> getUserFriends(int userId) {
@@ -102,4 +123,14 @@ public class UserService {
         return friendshipService.findCommonFriends(id, otherId);
     }
 
+    public Collection<Film> getRecommendations(int userId) {
+        validateUser(userId);
+
+        return filmService.getRecommendations(userId);
+    }
+
+    private User validateUser(int userId) {
+        return userRepository.getUserById(userId)
+                .orElseThrow(() -> new NotFoundException("Операция не выполнена. Пользователь с id=" + userId + " не найден"));
+    }
 }
